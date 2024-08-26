@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User 
+from datetime import models
 
 # Create your models here.
 class UserProfile(models.Model):
@@ -31,3 +33,4 @@ class UserResponse(models.Model):
     step = models.ForeignKey(FlowStep, on_delete=models.CASCADE)
     response = models.CharField(max_length=100)
     response_date = models.DateTimeField(auto_now_add=True)
+
