@@ -125,3 +125,9 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Stores sessions in the database
+SESSION_COOKIE_AGE = 1209600  # Session expires after 2 weeks (in seconds)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_NAME = 'my_session_cookie'  # Default is 'sessionid'
+SESSION_COOKIE_SECURE = True  # Ensures the session cookie is only sent over HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevents JavaScript access to the session cookie
