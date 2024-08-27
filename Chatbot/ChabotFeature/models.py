@@ -20,7 +20,7 @@ class Flow(models.Model):
     description = models.TextField()
 
 class FlowStep(models.Model):
-    flow = models.ForeignKey(Flow, on_delete=models.CASCADE)
+    flow = models.ForeignKey('Flow', on_delete=models.CASCADE)
     step_number = models.IntegerField()
     text = models.TextField()
     is_final_step = models.BooleanField(default=False)

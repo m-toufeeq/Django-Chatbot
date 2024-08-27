@@ -1,10 +1,103 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Chat Dashboard{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h2>Welcome, {{ user.username }}!</h2>
     <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            Chat Interface
+        </div>
+        <div class="card-body">
+            <div id="chat-window" class="border p-3" style="height: 250px; overflow-y: auto;">
+                <!-- Chat messages will be appended here -->
+            </div>
+            <div id="chat-input" class="mt-3">
+                <button id="start-chat-btn" class="btn btn-primary">Start Chat</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    /* Basic styles for the chat interface */
+    .chat-message {
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    .chat-message.user {
+        text-align: right;
+        background-color: #d1e7dd;
+    }
+    .chat-message.bot {
+        text-align: left;
+        background-color: #e9ecef;
+    }
+    .chat-option {
+        display: block;
+        margin: 5px 0;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+    }
+    .chat-option:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<script>
+    document.getElementById('start-chat-btn').addEventListener('click', function() {
+        startChat();
+    });
+
+    function startChat() {
+        fetch('/start_chat/')
+            .then(response => response.json())
+            .then(data => {
+                renderChatStep(data);
+                document.getElementById('start-chat-btn').style.display = 'none'; // Hide start button
+            });
+    }
+
+    function renderChatStep(step) {
+        const chatWindow = document.getElementById('chat-window');
+        
+        // Add the bot's message
+        const botMessage = document.createElement('div');
+        botMessage.className = 'chat-message bot';
+        botMessage.innerText = step.text;
+        chatWindow.appendChild(botMessage);
+        
+        // Render the options if available
+        if (step.options && step.options.length > 0) {
+            step.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option.text;
+                button.className = 'chat-option';
+                button.onclick = () => sendResponse(step.step_id, option.id);
+                chatWindow.appendChild(button);
+            });
+        }
+        
+        // Scroll to the bottom of the chat window
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function sendResponse(stepId, optionId) {
+        fetch(`/respond/${stepId}/${optionId}/`)
+            .then(response => response.json())
+            .then(data => {
+                renderChatStep(data);
+            });
+    }
+</script>
+
 {% endblock %}
