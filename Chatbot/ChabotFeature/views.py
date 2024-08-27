@@ -33,3 +33,6 @@ def register_view(request):
         form = RegisterForm()
 
     return render(request, 'ChabotFeature/register.html', {'form': form})
+
+def homepage(request):
+    return render(request, 'ChabotFeature/homepage.html', )
