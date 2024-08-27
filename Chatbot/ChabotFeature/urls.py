@@ -1,10 +1,11 @@
 from django.urls import path
-from . import views
+from .views import *
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('', views.index, name='index'),  # Renders the index.html at the root URL
-    path('register/', views.register_view, name='register'),
+    path('', index, name='index'),  
+    path('signup/', signup_view, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='ChabotFeature/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('dashboard/', dashboard_view, name='dashboard'),
 ]
