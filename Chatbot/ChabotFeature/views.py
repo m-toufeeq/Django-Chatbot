@@ -1,35 +1,37 @@
-
-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from .forms import SignUpForm
 from .models import *
-# @login_required
-# def index(request):
-#     # Retrieve visit count from session or initialize it to 0
-#     visit_count = request.session.get('visit_count', 0)
-    
-#     # Increment the count
-#     visit_count += 1
-    
-#     # Store the updated count back in the session
-#     request.session['visit_count'] = visit_count
-    
-#     # Pass the visit count to the template
-#     return render(request, 'ChabotFeature/index.html', {'visit_count': visit_count})
+from django.views.decorators.http import require_POST
+import json
 
-
-
+def flow_buttons(request):
+    flows = Flow.objects.all()
+    buttons = [{'id': flow.id, 'text': flow.name} for flow in flows]  
+    return JsonResponse(buttons, safe=False)
+    
 @login_required
+@require_POST
 def start_chat(request):
-    # Get the first flow for the user (this can be customized)
-    user_profile = UserProfile.objects.get(user=request.user)
-    flow = Flow.objects.first()  # Choose the flow you want to start
+    # Parse the received JSON data from the POST request
+    data = json.loads(request.body)
+    flow_text = data.get('flow_text')
+
+    # Retrieve the Flow object based on the button text
+    try:
+        flow = Flow.objects.get(name=flow_text)  # Assuming Flow model has a 'name' field
+    except Flow.DoesNotExist:
+        return JsonResponse({'error': 'Flow not found'}, status=404)
+
+    # Get the first step of the chosen flow
     first_step = FlowStep.objects.filter(flow=flow).order_by('step_number').first()
 
-    # Start the chat by returning the first step
+    if not first_step:
+        return JsonResponse({'error': 'No steps found for this flow'}, status=404)
+
+    # Return the first step of the flow along with the available options
     return JsonResponse({
         'step_id': first_step.id,
         'text': first_step.text,
@@ -69,8 +71,19 @@ def handle_response(request, step_id, option_id):
 
 @login_required
 def index(request):
-    # Redirect to the dashboard view
+    flow = Flow.objects.all()
     return redirect('dashboard')
+
+    
+@login_required
+def flowcreate(request):
+    if request.method == 'POST':
+        pass  
+
+    # Fetch existing flows if needed
+    flows = Flow.objects.all()
+
+    return render(request, 'ChabotFeature/flow_create.html', {'flows': flows})
 
 @login_required
 def dashboard_view(request):

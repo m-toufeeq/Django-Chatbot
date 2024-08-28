@@ -5,7 +5,10 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Welcome, {{ user.username }}!</h2>
-    <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+    <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
     
     <div class="card mt-4">
         <div class="card-header">
@@ -17,6 +20,8 @@
             </div>
             <div id="chat-input" class="mt-3">
                 <button id="start-chat-btn" class="btn btn-primary">Start Chat</button>
+                <!-- Container for dynamically generated buttons -->
+                <div id="flow-buttons" class="mt-3"></div>
             </div>
         </div>
     </div>
@@ -51,53 +56,106 @@
     .chat-option:hover {
         background-color: #0056b3;
     }
+    .flow-button {
+        margin: 5px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+    }
+    .flow-button:hover {
+        background-color: #0056b3;
+    }
 </style>
 
 <script>
-    document.getElementById('start-chat-btn').addEventListener('click', function() {
-        startChat();
-    });
-
-    function startChat() {
-        fetch('/start_chat/')
-            .then(response => response.json())
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listener to the start chat button
+        document.getElementById('start-chat-btn').addEventListener('click', function() {
+            startChat();
+        });
+    
+        // Function to start chat with a specific flow
+        function startChatWithFlow(flowText) {
+            // Send the button text (flowText) via AJAX to the backend
+            fetch('/start_chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',  // Ensure CSRF token is included for Django POST requests
+                },
+                body: JSON.stringify({ flow_text: flowText })  // Send the flow text
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                renderChatStep(data);
-                document.getElementById('start-chat-btn').style.display = 'none'; // Hide start button
-            });
-    }
-
-    function renderChatStep(step) {
-        const chatWindow = document.getElementById('chat-window');
-        
-        // Add the bot's message
-        const botMessage = document.createElement('div');
-        botMessage.className = 'chat-message bot';
-        botMessage.innerText = step.text;
-        chatWindow.appendChild(botMessage);
-        
-        // Render the options if available
-        if (step.options && step.options.length > 0) {
-            step.options.forEach(option => {
-                const button = document.createElement('button');
-                button.innerText = option.text;
-                button.className = 'chat-option';
-                button.onclick = () => sendResponse(step.step_id, option.id);
-                chatWindow.appendChild(button);
-            });
+                if (data.error) {
+                    console.error('Error:', data.error);
+                } else {
+                    renderChatStep(data);
+                    document.getElementById('start-chat-btn').style.display = 'none'; // Hide start button after starting chat
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
-        
-        // Scroll to the bottom of the chat window
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    function sendResponse(stepId, optionId) {
-        fetch(`/respond/${stepId}/${optionId}/`)
+    
+        // Function to render the chat step and options
+        function renderChatStep(step) {
+            const chatWindow = document.getElementById('chat-window');
+            
+            // Add the bot's message to the chat window
+            const botMessage = document.createElement('div');
+            botMessage.className = 'chat-message bot';
+            botMessage.innerText = step.text;
+            chatWindow.appendChild(botMessage);
+            
+            // Render the options (if available)
+            if (step.options && step.options.length > 0) {
+                step.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.innerText = option.text;
+                    button.className = 'chat-option';
+                    button.onclick = () => sendResponse(step.step_id, option.id);  // Send response on click
+                    chatWindow.appendChild(button);
+                });
+            }
+            
+            // Scroll to the bottom of the chat window
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    
+        // Function to send user response based on selected option
+        function sendResponse(stepId, optionId) {
+            fetch(`/respond/${stepId}/${optionId}/`)
             .then(response => response.json())
             .then(data => {
-                renderChatStep(data);
-            });
-    }
-</script>
+                renderChatStep(data);  // Render the next chat step
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Fetch and render Flow buttons dynamically
+        fetch('/flow_buttons/')
+            .then(response => response.json())
+            .then(buttons => {
+                const container = document.getElementById('flow-buttons');
+                buttons.forEach(buttonData => {
+                    const button = document.createElement('button');
+                    button.innerText = buttonData.text;
+                    button.className = 'flow-button';
+                    button.onclick = () => startChatWithFlow(buttonData.text);  // Pass the button text on click
+                    container.appendChild(button);
+                });
+            })
+            .catch(error => console.error('Error fetching flow buttons:', error));
+    });
+    
+</script>   
 
 {% endblock %}
