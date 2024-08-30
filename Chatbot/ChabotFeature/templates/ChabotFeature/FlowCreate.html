@@ -20,6 +20,15 @@
             <textarea class="form-control" id="flowDescription" name="description" rows="3" required></textarea>
         </div>
         
+        <!-- Download Excel Template -->
+        <button type="button" class="btn btn-primary" id="downloadTemplateBtn">Download Template</button>
+
+        <!-- Upload Excel File -->
+        <div class="form-group">
+            <label for="uploadExcelFile">Upload Excel File</label>
+            <input type="file" class="form-control-file" id="uploadExcelFile" accept=".xlsx">
+        </div>
+        
         <div id="stepsContainer">
             <div class="step-container">
                 <h4>Step 1</h4>
@@ -54,6 +63,7 @@
         <button type="submit" class="btn btn-primary">Save Flow</button>
     </form>
 </div>
+
 
 <script>
     let stepCount = 1;
@@ -188,11 +198,80 @@
         });
     });
 
-    // Initialize options and options state when the page loads
-    updateNextStepOptions();
-    $('#stepsContainer .step-container').each(function() {
-        toggleOptionsState(this);
+    // Download the Excel template
+    $('#downloadTemplateBtn').on('click', function() {
+        window.location.href = '{% url "download_template" %}';
     });
-</script>
-
+        // Handle Excel file upload
+        $('#uploadExcelFile').on('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+    
+                $.ajax({
+                    url: '{% url "upload_excel" %}', // Update with the correct URL
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        // Populate the form fields with the uploaded data
+                        $('#flowName').val(response.flow_name);
+                        $('#flowDescription').val(response.flow_description);
+    
+                        $('#stepsContainer').empty(); // Clear existing steps
+    
+                        response.steps.forEach((step, index) => {
+                            let stepHtml = `
+                                <div class="step-container">
+                                    <h4>Step ${index + 1}</h4>
+                                    <div class="form-group">
+                                        <label for="stepText${index + 1}">Step Text</label>
+                                        <input type="text" class="form-control" id="stepText${index + 1}" name="steps[${index}][text]" value="${step.text}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="isFinalStep${index + 1}">Is Final Step</label>
+                                        <input type="checkbox" id="isFinalStep${index + 1}" name="steps[${index}][is_final_step]" ${step.is_final_step ? 'checked' : ''}>
+                                    </div>
+                                    <div class="options-container">
+                                        <h5>Options</h5>
+                            `;
+    
+                            step.options.forEach((option, optionIndex) => {
+                                stepHtml += `
+                                    <div class="option-container">
+                                        <div class="form-group">
+                                            <label for="optionText${index + 1}_${optionIndex + 1}">Option Text</label>
+                                            <input type="text" class="form-control" id="optionText${index + 1}_${optionIndex + 1}" name="steps[${index}][options][${optionIndex}][text]" value="${option.text}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="nextStep${index + 1}_${optionIndex + 1}">Next Step</label>
+                                            <select class="form-control" id="nextStep${index + 1}_${optionIndex + 1}" name="steps[${index}][options][${optionIndex}][next_step]" required>
+                                                <!-- Options will be populated dynamically -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+    
+                            stepHtml += `
+                                        <button type="button" class="btn btn-primary add-option-btn">Add Option</button>
+                                    </div>
+                                </div>
+                            `;
+    
+                            $('#stepsContainer').append(stepHtml);
+                        });
+    
+                        updateNextStepOptions(); // Update options for all steps
+                    },
+                    error: function() {
+                        toastr.error('Failed to upload the Excel file.');
+                    }
+                });
+            }
+        });
+    </script>
+    
 {% endblock %}

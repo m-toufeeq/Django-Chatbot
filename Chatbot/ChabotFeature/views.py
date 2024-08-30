@@ -1,14 +1,20 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
-from django.http import JsonResponse
 from .forms import SignUpForm
 from .models import *
 from django.views.decorators.http import require_POST
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
-
+import openpyxl
+import pandas as pd
+from django.templatetags.static import static
+from django.contrib.staticfiles import finders
+import os   
+from django.conf import settings
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.core.files.storage import default_storage
+from django.middleware.csrf import get_token
 def flow_buttons(request):
     flows = Flow.objects.all()
     buttons = [{'id': flow.id, 'text': flow.name} for flow in flows]  
@@ -253,17 +259,6 @@ def get_flow_details(request, flow_id):
 
 
 def flowcreate(request):
-    # if request.method == 'POST':
-    #     flow_name = request.POST.get('flowName')
-    #     flow_description = request.POST.get('flowDescription')
-
-    #     # Create a new Flow instance
-    #     Flow.objects.create(name=flow_name, description=flow_description)
-
-    #     return JsonResponse({'success': True})
-    # numberofflowsteps = Flow.objects.all()
-    # numberofflowsteps = Flow.objects.all()
-    # flows = Flow.objects.all()
     return render(request, 'ChabotFeature/FlowCreate.html'  )
     
 @csrf_exempt
@@ -368,3 +363,49 @@ def respond_view(request, step_id, option_id):
         except FlowOption.DoesNotExist:
             return JsonResponse({'error': 'Option not found'}, status=404)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+def download_template(request):
+    file_path = finders.find('ChabotFeature/template.xlsx')
+    d
+    if file_path:
+        with open(file_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=template.xlsx'
+            return response
+    else:
+        return HttpResponse("File not found.", status=404)
+
+@csrf_exempt
+def upload_excel(request):
+    if request.method == 'POST' and request.FILES.get('file'):
+        file = request.FILES['file']
+        df = pd.read_excel(file)
+
+        # Extract data
+        data = {
+            'flow_name': df['Flow Name'].iloc[0],
+            'flow_description': df['Flow Description'].iloc[0],
+            'steps': []
+        }
+
+        steps = df[['Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']]
+        grouped = steps.groupby('Step Number')
+
+        for step_number, group in grouped:
+            step = {
+                'text': group['Step Text'].iloc[0],
+                'is_final_step': group['Is Final Step'].iloc[0] == 'True',
+                'options': []
+            }
+            for _, row in group.iterrows():
+                step['options'].append({
+                    'text': row['Option Text'],
+                    'next_step': row['Next Step Number']
+                })
+            data['steps'].append(step)
+
+        return JsonResponse(data)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
