@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ChabotFeature',
+    "nested_admin"
 ]
 
 MIDDLEWARE = [

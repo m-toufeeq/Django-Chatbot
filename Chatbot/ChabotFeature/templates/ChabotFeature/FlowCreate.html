@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Flow{% endblock %}
+
+{% block content %}
+<style>
+    .step-container, .option-container {
+        margin-bottom: 20px;
+    }
+</style>
+<div class="container mt-5">
+    <h2>Create Flow</h2>
+    <form id="createFlowForm">
+        <div class="form-group">
+            <label for="flowName">Flow Name</label>
+            <input type="text" class="form-control" id="flowName" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="flowDescription">Flow Description</label>
+            <textarea class="form-control" id="flowDescription" name="description" rows="3" required></textarea>
+        </div>
+        
+        <div id="stepsContainer">
+            <div class="step-container">
+                <h4>Step 1</h4>
+                <div class="form-group">
+                    <label for="stepText1">Step Text</label>
+                    <input type="text" class="form-control" id="stepText1" name="steps[0][text]" required>
+                </div>
+                <div class="form-group">
+                    <label for="isFinalStep1">Is Final Step</label>
+                    <input type="checkbox" id="isFinalStep1" name="steps[0][is_final_step]">
+                </div>
+                <div class="options-container">
+                    <h5>Options</h5>
+                    <div class="option-container">
+                        <div class="form-group">
+                            <label for="optionText1_1">Option Text</label>
+                            <input type="text" class="form-control" id="optionText1_1" name="steps[0][options][0][text]" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nextStep1_1">Next Step</label>
+                            <select class="form-control" id="nextStep1_1" name="steps[0][options][0][next_step]" required>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary add-option-btn">Add Option</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-success" id="addStepBtn">Add Step</button>
+        <button type="submit" class="btn btn-primary">Save Flow</button>
+    </form>
+</div>
+
+<script>
+    let stepCount = 1;
+
+    function updateNextStepOptions() {
+        const steps = $('#stepsContainer .step-container');
+        steps.each(function(index) {
+            const stepNumber = index + 1;
+            $(this).find('.option-container').each(function() {
+                const nextStepSelect = $(this).find('select[name*="next_step"]');
+                nextStepSelect.empty(); // Clear existing options
+                steps.each(function(stepIndex) {
+                    if (stepIndex + 1 !== stepNumber) { // Skip current step
+                        nextStepSelect.append(`<option value="${stepIndex + 1}">Step ${stepIndex + 1}</option>`);
+                    }
+                });
+            });
+        });
+    }
+
+    function toggleOptionsState(stepContainer) {
+        const isFinalStepChecked = $(stepContainer).find('input[name*="is_final_step"]').is(':checked');
+        const nextStepSelects = $(stepContainer).find('.option-container select[name*="next_step"]');
+
+        nextStepSelects.each(function() {
+            if (isFinalStepChecked) {
+                $(this).prop('disabled', true);
+                $(this).val(''); // Set value to null
+            } else {
+                $(this).prop('disabled', false);
+            }
+        });
+    }
+
+    $(document).on('click', '#addStepBtn', function() {
+        stepCount++;
+        $('#stepsContainer').append(`
+            <div class="step-container">
+                <h4>Step ${stepCount}</h4>
+                <div class="form-group">
+                    <label for="stepText${stepCount}">Step Text</label>
+                    <input type="text" class="form-control" id="stepText${stepCount}" name="steps[${stepCount - 1}][text]" required>
+                </div>
+                <div class="form-group">
+                    <label for="isFinalStep${stepCount}">Is Final Step</label>
+                    <input type="checkbox" id="isFinalStep${stepCount}" name="steps[${stepCount - 1}][is_final_step]">
+                </div>
+                <div class="options-container">
+                    <h5>Options</h5>
+                    <div class="option-container">
+                        <div class="form-group">
+                            <label for="optionText${stepCount}_1">Option Text</label>
+                            <input type="text" class="form-control" id="optionText${stepCount}_1" name="steps[${stepCount - 1}][options][0][text]" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nextStep${stepCount}_1">Next Step</label>
+                            <select class="form-control" id="nextStep${stepCount}_1" name="steps[${stepCount - 1}][options][0][next_step]" required>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary add-option-btn">Add Option</button>
+                </div>
+            </div>
+        `);
+        updateNextStepOptions(); // Update options for new step
+    });
+
+    $(document).on('click', '.add-option-btn', function() {
+        const stepIndex = $(this).closest('.step-container').index();
+        const optionCount = $(this).siblings('.options-container').find('.option-container').length + 1;
+        $(this).siblings('.options-container').append(`
+            <div class="option-container">
+                <div class="form-group">
+                    <label for="optionText${stepIndex + 1}_${optionCount}">Option Text</label>
+                    <input type="text" class="form-control" id="optionText${stepIndex + 1}_${optionCount}" name="steps[${stepIndex}][options][${optionCount - 1}][text]" required>
+                </div>
+                <div class="form-group">
+                    <label for="nextStep${stepIndex + 1}_${optionCount}">Next Step</label>
+                    <select class="form-control" id="nextStep${stepIndex + 1}_${optionCount}" name="steps[${stepIndex}][options][${optionCount - 1}][next_step]" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+        `);
+        updateNextStepOptions(); // Update options for new option
+    });
+
+    $(document).on('change', 'input[name*="is_final_step"]', function() {
+        toggleOptionsState($(this).closest('.step-container'));
+    });
+
+    $('#createFlowForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let formData = {
+            name: $('#flowName').val(),
+            description: $('#flowDescription').val(),
+            steps: []
+        };
+
+        $('#stepsContainer .step-container').each(function(index) {
+            let stepData = {
+                text: $(this).find(`input[name*="steps[${index}][text]"]`).val(),
+                is_final_step: $(this).find(`input[name*="steps[${index}][is_final_step]"]`).is(':checked'),
+                options: []
+            };
+
+            $(this).find('.option-container').each(function(optionIndex) {
+                let optionData = {
+                    text: $(this).find(`input[name*="steps[${index}][options][${optionIndex}][text]"]`).val(),
+                    next_step: $(this).find(`select[name*="steps[${index}][options][${optionIndex}][next_step]"]`).val()
+                };
+                stepData.options.push(optionData);
+            });
+
+            formData.steps.push(stepData);
+        });
+
+        $.ajax({
+            url: '{% url "create_flow" %}', // Update with the correct URL
+            type: 'POST',
+            contentType: 'application/json', // Send data as JSON
+            data: JSON.stringify(formData), // Convert the form data to JSON
+            success: function(response) {
+                toastr.success('Flow created successfully!');
+                $('#createFlowForm')[0].reset();
+            },
+            error: function() {
+                toastr.error('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    // Initialize options and options state when the page loads
+    updateNextStepOptions();
+    $('#stepsContainer .step-container').each(function() {
+        toggleOptionsState(this);
+    });
+</script>
+
+{% endblock %}

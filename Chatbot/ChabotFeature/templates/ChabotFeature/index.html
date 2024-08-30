@@ -19,7 +19,7 @@
                 <!-- Chat messages will be appended here -->
             </div>
             <div id="chat-input" class="mt-3">
-                <button id="start-chat-btn" class="btn btn-primary">Start Chat</button>
+                
                 <!-- Container for dynamically generated buttons -->
                 <div id="flow-buttons" class="mt-3"></div>
             </div>
@@ -72,10 +72,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add event listener to the start chat button
-        document.getElementById('start-chat-btn').addEventListener('click', function() {
-            startChat();
-        });
+        
     
         // Function to start chat with a specific flow
         function startChatWithFlow(flowText) {
@@ -99,7 +96,7 @@
                     console.error('Error:', data.error);
                 } else {
                     renderChatStep(data);
-                    document.getElementById('start-chat-btn').style.display = 'none'; // Hide start button after starting chat
+                    
                 }
             })
             .catch(error => console.error('Error:', error));
@@ -133,9 +130,18 @@
         // Function to send user response based on selected option
         function sendResponse(stepId, optionId) {
             fetch(`/respond/${stepId}/${optionId}/`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                renderChatStep(data);  // Render the next chat step
+                if (data.error) {
+                    console.error('Error:', data.error);
+                } else {
+                    renderChatStep(data);  // Render the next chat step
+                }
             })
             .catch(error => console.error('Error:', error));
         }
@@ -149,7 +155,12 @@
                     const button = document.createElement('button');
                     button.innerText = buttonData.text;
                     button.className = 'flow-button';
-                    button.onclick = () => startChatWithFlow(buttonData.text);  // Pass the button text on click
+                    button.id = buttonData.id+"_flow"
+                    button.onclick = () => {
+                        console.log('Flow Text:', buttonData.id + "_flow");
+                        startChatWithFlow(buttonData.id + "_flow");
+                    };
+                    // Pass the button text on click
                     container.appendChild(button);
                 });
             })

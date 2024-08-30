@@ -36,9 +36,10 @@
         <div class="container-fluid justify-content-center">
             <ul class="navbar-nav">
                 {%if request.user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'logout' %}">Logout</a>
-                </li>
+                <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <a class="nav-link text-white" href="{% url 'logout' %}">Log out</a>
+                </form>
                 {% else %}
 
                 <li class="nav-item">
@@ -53,7 +54,10 @@
                     <a class="nav-link text-white" href="{% url 'index' %}">Chatbot</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'flowcreate' %}">FlowCreate</a>
+                    <a class="nav-link text-white" href="{% url 'flowview' %}">Flow Record</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'flowcreate' %}">Flow Create</a>
                 </li>
             </ul>
         </div>

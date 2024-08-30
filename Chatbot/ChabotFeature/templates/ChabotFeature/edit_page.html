@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Flow{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Edit Flow</h1>
+
+    <form id="editFlowForm">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="flowName">Flow Name</label>
+            <input type="text" class="form-control" id="flowName" value="{{ flow.name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="flowDescription">Flow Description</label>
+            <textarea class="form-control" id="flowDescription" rows="3" required>{{ flow.description }}</textarea>
+        </div>
+        
+        <div id="stepsContainer">
+            {% for step in steps %}
+            <div class="step-container" data-step-id="{{ step.id }}">
+                <h4>Step {{ forloop.counter }}</h4>
+                <div class="form-group">
+                    <label for="stepText{{ step.id }}">Step Text</label>
+                    <input type="text" class="form-control" id="stepText{{ step.id }}" value="{{ step.text }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="isFinalStep{{ step.id }}">Is Final Step</label>
+                    <input type="checkbox" id="isFinalStep{{ step.id }}" {% if step.is_final_step %}checked{% endif %}>
+                </div>
+                
+                <div class="options-container">
+                    <h5>Options</h5>
+                    {% for option in step.flowoption_set.all %}
+                    <div class="option-container" data-option-id="{{ option.id }}">
+                        <div class="form-group">
+                            <label for="optionText{{ option.id }}">Option Text</label>
+                            <input type="text" class="form-control" id="optionText{{ option.id }}" value="{{ option.text }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nextStep{{ option.id }}">Next Step</label>
+                            <select class="form-control" id="nextStep{{ option.id }}" required>
+                                {% for s in steps %}
+                                <option value="{{ s.id }}" {% if s.id == option.next_step_id %}selected{% endif %}>Step {{ s.step_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+    $('#editFlowForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const flowId = {{ flow.id }};
+        const data = {
+            name: $('#flowName').val(),
+            description: $('#flowDescription').val(),
+            steps: []
+        };
+        
+        $('.step-container').each(function() {
+            const stepId = $(this).data('step-id');
+            const stepText = $(this).find('input[id^="stepText"]').val();
+            const isFinalStep = $(this).find('input[id^="isFinalStep"]').is(':checked');
+            const options = [];
+            
+            $(this).find('.option-container').each(function() {
+                const optionId = $(this).data('option-id');
+                const optionText = $(this).find('input[id^="optionText"]').val();
+                const nextStep = $(this).find('select').val();
+                options.push({ id: optionId, text: optionText, next_step: nextStep });
+            });
+            
+            data.steps.push({
+                id: stepId,
+                text: stepText,
+                is_final_step: isFinalStep,
+                options: options
+            });
+        });
+        
+        $.ajax({
+            url: `/flows/update/${flowId}/`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                toastr.success('Flow updated successfully!'); // add a few seconds of delay 
+                window.location.href = '{% url "flow_view" %}';
+            },
+            error: function() {
+                toastr.error('An error occurred. Please try again.');
+            }
+        });
+    });
+</script>
+{% endblock %}

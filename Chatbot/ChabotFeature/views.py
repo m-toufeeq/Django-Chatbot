@@ -6,6 +6,8 @@ from .forms import SignUpForm
 from .models import *
 from django.views.decorators.http import require_POST
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
 
 def flow_buttons(request):
     flows = Flow.objects.all()
@@ -18,10 +20,12 @@ def start_chat(request):
     # Parse the received JSON data from the POST request
     data = json.loads(request.body)
     flow_text = data.get('flow_text')
-
+    flow_text = flow_text.split("_")[0]
+    #2_flow
     # Retrieve the Flow object based on the button text
     try:
-        flow = Flow.objects.get(name=flow_text)  # Assuming Flow model has a 'name' field
+        flow = Flow.objects.get(id=flow_text)
+        print(flow)  # Assuming Flow model has a 'name' field
     except Flow.DoesNotExist:
         return JsonResponse({'error': 'Flow not found'}, status=404)
 
@@ -76,16 +80,44 @@ def index(request):
 
     
 @login_required
-def flowcreate(request):
+def flowview(request):
     if request.method == 'POST':
-        pass  
+        # Handle form submission or other POST request processing here
+        pass
+    
+    # Retrieve the UserProfile for the logged-in user
+    try:
+        userprofile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        # Handle the case where UserProfile does not exist
+        # For example, redirect to an error page or create a UserProfile
+        return render(request, 'ChabotFeature/error.html', {'message': 'UserProfile not found'})
 
-    # Fetch existing flows if needed
+    # Attempt to retrieve SymptomLog for the UserProfile
+    try:
+        symptomlog = SymptomLog.objects.filter(user=userprofile)
+        if not symptomlog.exists():
+            # Handle the case where no SymptomLog records are found
+            # For example, you might want to create a default SymptomLog or provide a message
+            return render(request, 'ChabotFeature/flowview.html', {
+                'flows': Flow.objects.all(),
+                'message': 'No symptom logs found for the user.'
+            })
+    except SymptomLog.DoesNotExist:
+        # Handle any other issues with SymptomLog retrieval
+        return render(request, 'ChabotFeature/flowview.html', {
+            'flows': Flow.objects.all(),
+            'message': 'Error retrieving symptom logs.'
+        })
+
+    # Retrieve all flows to display
     flows = Flow.objects.all()
 
-    return render(request, 'ChabotFeature/flow_create.html', {'flows': flows})
+    return render(request, 'ChabotFeature/flowview.html', {'flows': flows})
 
-@login_required
+
+
+# @login_required
 def dashboard_view(request):
     return render(request, 'ChabotFeature/index.html')
 
@@ -95,7 +127,7 @@ def signup_view(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # user = authenticate(username=user.username, password=form.cleaned_data.get('password1'))
+
             
             login(request, user)
             return JsonResponse({'success': True})
@@ -104,3 +136,235 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'ChabotFeature/register.html', {'form': form})
+@login_required
+def get_flow_details(request, flow_id):
+    try:
+        # Get the flow object
+        flow = Flow.objects.get(id=flow_id)
+        
+        # Get all steps associated with the flow
+        steps = FlowStep.objects.filter(flow=flow).order_by('step_number')
+        
+        # Get user responses for these steps
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_responses = UserResponse.objects.filter(user=user_profile, step__in=steps).values('step_id', 'response')
+
+        # Get questions from FlowOption
+        flow_options = FlowOption.objects.filter(step__in=steps).values('step_id', 'text')
+        
+        # Prepare response data
+        step_data = {}
+        for option in flow_options:
+            step_id = option['step_id']
+            if step_id not in step_data:
+                step_data[step_id] = {
+                    'questions': [],
+                    'responses': ''
+                }
+            step_data[step_id]['questions'].append(option['text'])
+
+        for response in user_responses:
+            step_id = response['step_id']
+            if step_id in step_data:
+                step_data[step_id]['responses'] = response['response']
+
+        response_data = {
+            'success': True,
+            'flow': {
+                'id': flow.id,
+                'name': flow.name,
+                'description': flow.description,
+                'steps': [
+                    {
+                        'id': step.id,
+                        'step_number': step.step_number,
+                        'questions': step_data.get(step.id, {}).get('questions', []),
+                        'response': step_data.get(step.id, {}).get('responses', '')
+                    }
+                    for step in steps
+                ]
+            }
+        }
+        
+    except Flow.DoesNotExist:
+        response_data = {'success': False, 'error': 'Flow not found'}
+    
+    except UserProfile.DoesNotExist:
+        response_data = {'success': False, 'error': 'UserProfile not found'}
+
+    return JsonResponse(response_data)
+
+    try:
+        # Get the flow object
+        flow = Flow.objects.get(id=flow_id)
+        
+        # Get all steps associated with the flow
+        steps = FlowStep.objects.filter(flow=flow).order_by('step_number')
+        
+        # Get user responses for these steps
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_responses = UserResponse.objects.filter(user=user_profile, step__in=steps).values('step_id', 'response')
+
+        # Get questions from FlowOption
+        flow_options = FlowOption.objects.filter(step__in=steps).values('step_id', 'text')
+        print(flow_options)
+        # Prepare response data
+        step_data = {}
+        for option in flow_options:
+            step_id = option['step_id']
+            if step_id not in step_data:
+                step_data[step_id] = {
+                    'questions': [],
+                    'responses': ''
+                }
+            step_data[step_id]['questions'].append(option['text'])
+
+        for response in user_responses:
+            step_id = response['step_id']
+            if step_id in step_data:
+                step_data[step_id]['responses'] = response['response']
+
+        response_data = {
+            'success': True,
+            'flow': {
+                'id': flow.id,
+                'name': flow.name,
+                'description': flow.description,
+                'steps': [
+                    {
+                        'id': step.id,
+                        'step_number': step.step_number,
+                        'questions': step_data.get(step.id, {}).get('questions', []),
+                        'response': step_data.get(step.id, {}).get('responses', '')
+                    }
+                    for step in steps
+                ]
+            }
+        }
+        
+    except Flow.DoesNotExist:
+        response_data = {'success': False, 'error': 'Flow not found'}
+    
+    except UserProfile.DoesNotExist:
+        response_data = {'success': False, 'error': 'UserProfile not found'}
+
+    return JsonResponse(response_data)
+
+
+
+def flowcreate(request):
+    # if request.method == 'POST':
+    #     flow_name = request.POST.get('flowName')
+    #     flow_description = request.POST.get('flowDescription')
+
+    #     # Create a new Flow instance
+    #     Flow.objects.create(name=flow_name, description=flow_description)
+
+    #     return JsonResponse({'success': True})
+    # numberofflowsteps = Flow.objects.all()
+    # numberofflowsteps = Flow.objects.all()
+    # flows = Flow.objects.all()
+    return render(request, 'ChabotFeature/FlowCreate.html'  )
+    
+@csrf_exempt
+def create_flow(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            flow_name = data.get('name')
+            flow_description = data.get('description')
+            steps_data = data.get('steps')
+            
+            flow = Flow.objects.create(name=flow_name, description=flow_description)
+            step_mapping = {}
+            
+            for step_data in steps_data:
+                step_number = len(step_mapping) + 1
+                is_final_step = step_data.get('is_final_step', False)
+                step = FlowStep.objects.create(flow=flow, step_number=step_number, text=step_data['text'], is_final_step=is_final_step)
+                step_mapping[step_number] = step
+                
+                options_data = step_data.get('options', [])
+                for option_data in options_data:
+                    next_step_number = option_data.get('next_step')
+                    next_step = step_mapping.get(next_step_number)
+                    FlowOption.objects.create(step=step, text=option_data['text'], next_step=next_step)
+            
+            return JsonResponse({'message': 'Flow created successfully!'})
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def flow_view(request):
+    flows = Flow.objects.all()
+    return render(request, 'ChabotFeature/flowview.html', {'flows': flows})
+
+
+def edit_flow(request, flow_id):
+    flow = get_object_or_404(Flow, id=flow_id)
+    steps = FlowStep.objects.filter(flow=flow).prefetch_related('options')
+    return render(request, 'ChabotFeature/edit_page.html', {'flow': flow, 'steps': steps})
+
+
+# Handle saving the edit ed flow
+@csrf_exempt
+def update_flow(request, flow_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        flow = get_object_or_404(Flow, id=flow_id)
+
+        # Update flow
+        flow.name = data['name']
+        flow.description = data['description']
+        flow.save()
+
+        # Update steps and options
+        for step_data in data['steps']:
+            step = FlowStep.objects.get(id=step_data['id'])
+            step.text = step_data['text']
+            step.is_final_step = step_data['is_final_step']
+            step.save()
+
+            # Update options
+            for option_data in step_data['options']:
+                option = FlowOption.objects.get(id=option_data['id'])
+                option.text = option_data['text']
+                option.next_step_id = option_data['next_step']
+                option.save()
+
+        return JsonResponse({'success': True})
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def respond_view(request, step_id, option_id):
+    if request.method == 'GET':
+        try:
+            # Retrieve the current step and selected option
+            step = get_object_or_404(FlowStep, id=step_id)
+            selected_option = get_object_or_404(FlowOption, id=option_id)
+
+            # Determine the next step (if exists)
+            next_step = selected_option.next_step
+
+            # Prepare response data for JSON
+            if next_step:
+                data = {
+                    'text': next_step.text,
+                    'step_id': next_step.id,
+                    'options': [{'id': option.id, 'text': option.text} for option in next_step.options.all()],
+                }
+            else:
+                # If it's the final step, no further options
+                data = {
+                    'text': "This is the final step.",
+                    'step_id': None,
+                    'options': [],
+                }
+
+            return JsonResponse(data)
+        except FlowStep.DoesNotExist:
+            return JsonResponse({'error': 'Step not found'}, status=404)
+        except FlowOption.DoesNotExist:
+            return JsonResponse({'error': 'Option not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

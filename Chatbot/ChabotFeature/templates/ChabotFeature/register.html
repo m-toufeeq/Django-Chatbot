@@ -1,154 +1,122 @@
-
-            
 {% extends 'base.html' %}
 
 {% block title %}Sign Up{% endblock %}
 
 {% block content %}
-<script>
+<div class="container-fluid mt-5">
+    <div class="row" style="height: 100vh;">
+        <!-- Left Partition (70%) -->
+        <div class="col-md-8 left-partition d-flex align-items-center justify-content-center">
+            <!-- You can add content here for the left partition -->
+        </div>
+
+        <!-- Right Partition (30%) -->
+        <div class="col-md-4 d-flex align-items-center justify-content-center" style="background-color: #ffffff;">
+            <div class="signup-form-container">
+                <h2 class="text-center mb-4">Sign Up</h2>
+                <form method="post" id="signupForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div id="emailError" class="text-danger"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password1" class="form-label">Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password1" name="password1" required>
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword1">👁️</button>
+                        </div>
+                        <div id="password1Error" class="text-danger"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password2" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password2" name="password2" required>
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword2">👁️</button>
+                        </div>
+                        <div id="password2Error" class="text-danger"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Sign Up</button>
+                </form>
+                <p class="mt-3 text-center">
+                    Already have an account? <a href="{% url 'login' %}">Login here</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
     .left-partition {
         background-color: #f8f9fa; /* Optional, you can set a color or leave it transparent */
-        height: 100vh;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs' width='1440' height='560' preserveAspectRatio='none' viewBox='0 0 1440 560'%3e%3cg mask='url(%26quot%3b%23SvgjsMask1000%26quot%3b)' fill='none'%3e%3crect width='1440' height='560' x='0' y='0' fill='%230e2a47'%3e%3c/rect%3e%3cuse xlink:href='%23SvgjsSymbol1007' x='0' y='0'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsSymbol1007' x='720' y='0'%3e%3c/use%3e%3c/g%3e%3cdefs%3e%3cmask id='SvgjsMask1000'%3e%3crect width='1440' height='560' fill='white'%3e%3c/rect%3e%3c/mask%3e%3cpath d='M-1 0 a1 1 0 1 0 2 0 a1 1 0 1 0 -2 0z' id='SvgjsPath1002'%3e%3c/path%3e%3cpath d='M-3 0 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0z' id='SvgjsPath1004'%3e%3c/path%3e%3cpath d='M-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0z' id='SvgjsPath1001'%3e%3c/path%3e%3cpath d='M2 -2 L-2 2z' id='SvgjsPath1005'%3e%3c/path%3e%3cpath d='M6 -6 L-6 6z' id='SvgjsPath1003'%3e%3c/path%3e%3cpath d='M30 -30 L-30 30z' id='SvgjsPath1006'%3e%3c/path%3e%3c/defs%3e%3csymbol id='SvgjsSymbol1007'%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='30' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='30' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='30' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='570' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='90' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='90' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='90' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='90' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='570' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='150' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='150' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='150' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='150' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='150' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='150' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='150' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='150' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='150' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='150' y='570' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='210' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='210' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='210' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='210' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='210' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='210' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='210' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='210' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='210' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='210' y='570' stroke='%231c538e'%3e%3c/use%3e%3c/symbol%3e%3c/svg%3e");
-        background-size: cover; /* Adjust as needed */
-        background-position: center; /* Adjust as needed */
-        background-repeat: no-repeat; /* Prevent repeating the image */
-      }
-      background-image:
-    
-</script>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-    <h2>Sign Up</h2>
-    <form method="post" id="signupForm">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-            <div id="emailError" class="text-danger"></div>
-        </div>
-        <div class="mb-3">
-            <label for="password1" class="form-label">Password</label>
-            <div class="input-group">
-                <input type="password" class="form-control" id="password1" name="password1" required>
-                <button type="button" class="btn btn-outline-secondary" id="togglePassword1">👁️</button>
-            </div>
-            <div id="password1Error" class="text-danger"></div>
-        </div>
-        <div class="mb-3">
-            <label for="password2" class="form-label">Confirm Password</label>
-            <div class="input-group">
-                <input type="password" class="form-control" id="password2" name="password2" required>
-                <button type="button" class="btn btn-outline-secondary" id="togglePassword2">👁️</button>
-            </div>
-            <div id="password2Error" class="text-danger"></div>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Sign Up</button>
-    </form>
-    <p class="mt-3">
-        Already have an account? <a href="{% url 'login' %}">Login here</a>.
-    </p>
-</div>
-</div>
-</div>
-
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs' width='1440' height='560' preserveAspectRatio='none' viewBox='0 0 1440 560'%3e%3cg mask='url(%26quot%3b%23SvgjsMask1000%26quot%3b)' fill='none'%3e%3crect width='1440' height='560' x='0' y='0' fill='%230e2a47'%3e%3c/rect%3e%3cuse xlink:href='%23SvgjsSymbol1007' x='0' y='0'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsSymbol1007' x='720' y='0'%3e%3c/use%3e%3c/g%3e%3cdefs%3e%3cmask id='SvgjsMask1000'%3e%3crect width='1440' height='560' fill='white'%3e%3c/rect%3e%3c/mask%3e%3cpath d='M-1 0 a1 1 0 1 0 2 0 a1 1 0 1 0 -2 0z' id='SvgjsPath1002'%3e%3c/path%3e%3cpath d='M-3 0 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0z' id='SvgjsPath1004'%3e%3c/path%3e%3cpath d='M-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0z' id='SvgjsPath1001'%3e%3c/path%3e%3cpath d='M2 -2 L-2 2z' id='SvgjsPath1005'%3e%3c/path%3e%3cpath d='M6 -6 L-6 6z' id='SvgjsPath1003'%3e%3c/path%3e%3cpath d='M30 -30 L-30 30z' id='SvgjsPath1006'%3e%3c/path%3e%3c/defs%3e%3csymbol id='SvgjsSymbol1007'%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='30' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='30' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='30' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='570' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='90' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='90' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='90' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='90' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='90' y='570' stroke='%231c538e'%3e%3c/use%3e%3c/symbol%3e%3c/svg%3e");
+    }
+</style>
 
 <script>
-    $(document).ready(function() {
-      
-        $('#togglePassword1').on('click', function() {
-            console.log('Toggle Password 1 Clicked');
-            let $passwordField = $('#password1');
-            let type = $passwordField.attr('type') === 'password' ? 'text' : 'password';
-            $passwordField.attr('type', type);
-            $(this).text(type === 'password' ? '👁️' : '🫣');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password visibility toggle
+        document.getElementById('togglePassword1').addEventListener('click', function() {
+            const passwordField = document.getElementById('password1');
+            const type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
         });
 
-        $('#togglePassword2').on('click', function() {
-            console.log('Toggle Password 2 Clicked');
-            let $passwordField = $('#password2');
-            let type = $passwordField.attr('type') === 'password' ? 'text' : 'password';
-            $passwordField.attr('type', type);
-            $(this).text(type === 'password' ? '👁️' : '🫣');
+        document.getElementById('togglePassword2').addEventListener('click', function() {
+            const passwordField = document.getElementById('password2');
+            const type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
         });
 
-        // Form validation
-        $("#signupForm").on('submit', function(e) {
-            e.preventDefault();
-            let isValid = true;
+        // Form submission
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
 
-            // Clear previous errors
-            $('#emailError').text('');
-            $('#password1Error').text('');
-            $('#password2Error').text('');
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password1 = document.getElementById('password1').value;
+            const password2 = document.getElementById('password2').value;
+            const csrfToken = '{{ csrf_token }}';
 
-            // Email validation
-            let email = $('#email').val();
-            let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(email)) {
-                $('#emailError').text('Invalid email format');
-                isValid = false;
-            }
-
-            // Password validation
-            let password1 = $('#password1').val();
-            let password2 = $('#password2').val();
-            if (password1.length < 8) {
-                $('#password1Error').text('Password must be at least 8 characters long');
-                isValid = false;
-            }
             if (password1 !== password2) {
-                $('#password2Error').text('Passwords do not match');
-                isValid = false;
+                document.getElementById('password2Error').textContent = 'Passwords do not match!';
+                return;
+            } else {
+                document.getElementById('password2Error').textContent = '';
             }
 
-            if (isValid) {
-                $.ajax({
-                    type: "POST",
-                    url: "{% url 'signup' %}",
-                    data: $(this).serialize(),
-                    beforeSend: function() {
-                        $("#loader").show();
-                        $("form").find("input, button").prop("disabled", true);
-                    },
-                    success: function(response) {
-                        $("#loader").hide();
-                        $("form").find("input, button").prop("disabled", false);
-                        if (response.success) {
-                            window.location.href = "{% url 'dashboard' %}";
-                        } else {
-                            let errors = JSON.parse(response.errors);
-                            for (let field in errors) {
-                            errors[field].forEach(function(error) {
-                                toastr.error(`${field}: ${error.message}`);
-                            });
+            const data = {
+                username: username,
+                email: email,
+                password1: password1,
+                password2: password2,
+                csrfmiddlewaretoken: csrfToken
+            };
 
-                            $("form").find("input, button").prop("disabled", false);
-                        }
-                        }
-                    },
-                    error: function(response) {
-                        $("#loader").hide();
-                        let errors = JSON.parse(response.responseJSON.errors);
-                        for (let field in errors) {
-                            errors[field].forEach(function(error) {
-                                toastr.error(`${field}: ${error.message}`);
-                            });
-                        }
-                        $("form").find("input, button").prop("disabled", false);
+            $.ajax({
+                type: 'POST',
+                url: '{% url "signup" %}',  // Adjust the URL as needed
+                data: data,
+                success: function(response) {
+                    // Handle success case (e.g., redirect to another page)
+                    window.location.href = response.redirect_url;
+                },  
+                error: function(xhr) {
+                    const errors = xhr.responseJSON.errors;
+                    if (errors.email) {
+                        document.getElementById('emailError').textContent = errors.email;
                     }
-                });
-            }
+                    if (errors.password1) {
+                        document.getElementById('password1Error').textContent = errors.password1;
+                    }
+                }
+            });
         });
     });
 </script>
 {% endblock %}
-
-
-
-
