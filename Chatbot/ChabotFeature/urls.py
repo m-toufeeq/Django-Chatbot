@@ -23,17 +23,17 @@ urlpatterns = [
 
     path('start_chat/', start_chat, name='start_chat'),  # working
 
-    path('respond/<int:step_id>/<int:option_id>/', respond_view, name='respond_view'),
+    path('respond/<int:step_id>/<int:option_id>/', respond_view, name='respond_view'), #working
 
-    # path('edit_page/', edit_page, name='edit_page'),  # working
 
     path('flows/', flow_view, name='flow_view'),
     path('flows/edit/<int:flow_id>/', edit_flow, name='edit_flow'),
     path('flows/update/<int:flow_id>/', update_flow, name='update_flow'),
 
-    # path('import-flows/', import_flows_from_excel, name='import_flows_from_excel'),  # import flow
     
     # New paths
     path('download-template/', download_template, name='download_template'),
     path('upload-excel/', upload_excel, name='upload_excel'),
+
+    path('run_flow/<int:flow_id>/', run_flow, name='run_flow'),
 ]

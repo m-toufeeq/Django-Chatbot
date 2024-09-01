@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Run Flow: {{ flow.name }}</h1>
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div id="chat-interface">
+                        <div id="chat-container">
+                            <p id="step-text">{{ text }}</p>
+                            <div id="options-container" class="mt-4">
+                                {% for option in options %}
+                                <button class="btn btn-primary chat-option mt-2" data-step-id="{{ step_id }}" data-option-id="{{ option.id }}">
+                                    {{ option.text }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        // Chatbot interaction
+        function handleChatOptionClick(button) {
+            const stepId = $(button).data('step-id');
+            const optionId = $(button).data('option-id');
+
+            // AJAX call to handle the user's selection and fetch the next step
+            $.ajax({
+                url: `/respond/${stepId}/${optionId}/`,
+                type: 'GET',
+                success: function (data) {
+                    if (data.step_id) {
+                        // Update the UI with the new step's text
+                        $('#step-text').text(data.text);
+
+                        // Update the options container with the new set of options
+                        $('#options-container').empty();
+                        data.options.forEach(function (option) {
+                            $('#options-container').append(`
+                                <button class="btn btn-primary chat-option mt-2" data-step-id="${data.step_id}" data-option-id="${option.id}">
+                                    ${option.text}
+                                </button>
+                            `);
+                        });
+
+                        // Re-attach event listeners to the new buttons
+                        $('.chat-option').click(function () {
+                            handleChatOptionClick(this);
+                        });
+
+                    } else {
+                        // Handle the end of the flow (e.g., final step)
+                        $('#options-container').html('<p class="mt-4">Thank you for completing the flow!</p>');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+
+        // Attach the click event handler to the initial chat options
+        $('.chat-option').click(function () {
+            handleChatOptionClick(this);
+        });
+    });
+</script>
+{% endblock %}

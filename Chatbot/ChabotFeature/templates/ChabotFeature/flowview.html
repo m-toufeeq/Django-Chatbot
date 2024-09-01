@@ -22,7 +22,10 @@
                         <td>{{ flow.description }}</td>
                         <td>
                             <a href="{% url "edit_flow" flow.id %}" class="btn btn-primary edit-btn">Edit</a>
+                            <a href="{% url 'run_flow' flow.id %}" class="btn btn-primary">Run Flow</a>
+
                         </td>
+                        
                     </tr>
                     {% endfor %}
                 </tbody>

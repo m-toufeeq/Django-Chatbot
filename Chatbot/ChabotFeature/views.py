@@ -1,20 +1,17 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from .forms import SignUpForm
 from .models import *
 from django.views.decorators.http import require_POST
 import json
 from django.views.decorators.csrf import csrf_exempt
-import openpyxl
-import pandas as pd
-from django.templatetags.static import static
 from django.contrib.staticfiles import finders
-import os   
-from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.core.files.storage import default_storage
 from django.middleware.csrf import get_token
+import pandas as pd
+
 def flow_buttons(request):
     flows = Flow.objects.all()
     buttons = [{'id': flow.id, 'text': flow.name} for flow in flows]  
@@ -31,7 +28,6 @@ def start_chat(request):
     # Retrieve the Flow object based on the button text
     try:
         flow = Flow.objects.get(id=flow_text)
-        print(flow)  # Assuming Flow model has a 'name' field
     except Flow.DoesNotExist:
         return JsonResponse({'error': 'Flow not found'}, status=404)
 
@@ -123,13 +119,13 @@ def flowview(request):
 
 
 
+@login_required
 # @login_required
 def dashboard_view(request):
     return render(request, 'ChabotFeature/index.html')
 
 def signup_view(request):
     if request.method == 'POST':
-        print(request.POST)
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -142,6 +138,7 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'ChabotFeature/register.html', {'form': form})
+
 @login_required
 def get_flow_details(request, flow_id):
     try:
@@ -213,7 +210,6 @@ def get_flow_details(request, flow_id):
 
         # Get questions from FlowOption
         flow_options = FlowOption.objects.filter(step__in=steps).values('step_id', 'text')
-        print(flow_options)
         # Prepare response data
         step_data = {}
         for option in flow_options:
@@ -284,18 +280,21 @@ def create_flow(request):
                     next_step_number = option_data.get('next_step')
                     next_step = step_mapping.get(next_step_number)
                     FlowOption.objects.create(step=step, text=option_data['text'], next_step=next_step)
-            
+            redirect("flowview")
             return JsonResponse({'message': 'Flow created successfully!'})
         
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+@login_required
 
 def flow_view(request):
     flows = Flow.objects.all()
     return render(request, 'ChabotFeature/flowview.html', {'flows': flows})
 
+
+@login_required
 
 def edit_flow(request, flow_id):
     flow = get_object_or_404(Flow, id=flow_id)
@@ -303,7 +302,7 @@ def edit_flow(request, flow_id):
     return render(request, 'ChabotFeature/edit_page.html', {'flow': flow, 'steps': steps})
 
 
-# Handle saving the edit ed flow
+@login_required
 @csrf_exempt
 def update_flow(request, flow_id):
     if request.method == 'POST':
@@ -331,7 +330,7 @@ def update_flow(request, flow_id):
 
         return JsonResponse({'success': True})
     return JsonResponse({'error': 'Invalid request method'}, status=400)
-
+@login_required
 def respond_view(request, step_id, option_id):
     if request.method == 'GET':
         try:
@@ -349,6 +348,7 @@ def respond_view(request, step_id, option_id):
                     'step_id': next_step.id,
                     'options': [{'id': option.id, 'text': option.text} for option in next_step.options.all()],
                 }
+                
             else:
                 # If it's the final step, no further options
                 data = {
@@ -365,10 +365,10 @@ def respond_view(request, step_id, option_id):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+@login_required
 
 def download_template(request):
     file_path = finders.find('ChabotFeature/template.xlsx')
-    d
     if file_path:
         with open(file_path, 'rb') as f:
             response = HttpResponse(f.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -376,6 +376,7 @@ def download_template(request):
             return response
     else:
         return HttpResponse("File not found.", status=404)
+@login_required
 
 @csrf_exempt
 def upload_excel(request):
@@ -409,3 +410,46 @@ def upload_excel(request):
         return JsonResponse(data)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+@login_required
+
+def run_flow(request, flow_id):
+    flow = get_object_or_404(Flow, id=flow_id)
+    first_step = FlowStep.objects.filter(flow=flow).order_by('step_number').first()
+
+    if not first_step:
+        return render(request, 'ChabotFeature/error.html', {'message': 'No steps found for this flow'})
+
+    # Pass the initial step to the template
+    return render(request, 'ChabotFeature/run_flow.html', {
+        'flow': flow,
+        'step_id': first_step.id,
+        'text': first_step.text,
+        'options': list(first_step.options.values('id', 'text'))
+    })
+@login_required
+
+def respond(request, step_id, option_id):
+    try:
+        step = FlowStep.objects.get(id=step_id)
+        option = FlowOption.objects.get(id=option_id)
+
+        # Get the next step
+        next_step = FlowStep.objects.filter(flow=step.flow, step_number=option.next_step_number).first()
+
+        if next_step:
+            options = list(next_step.options.values('id', 'text'))
+            response_data = {
+                'step_id': next_step.id,
+                'text': next_step.text,
+                'options': options
+            }
+        else:
+            response_data = {
+                'text': 'Thank you for completing the flow!',
+                'options': []
+            }
+
+        return JsonResponse(response_data)
+
+    except FlowStep.DoesNotExist or FlowOption.DoesNotExist:
+        return JsonResponse({'error': 'Invalid step or option ID'}, status=400)
