@@ -269,7 +269,7 @@
         if (file) {
             const formData = new FormData();
             formData.append('file', file);
-    
+            console.log(formData);
             $.ajax({
                 url: '{% url "upload_excel" %}', // Update with the correct URL
                 type: 'POST',

@@ -38,6 +38,7 @@ def start_chat(request):
         return JsonResponse({'error': 'No steps found for this flow'}, status=404)
 
     # Return the first step of the flow along with the available options
+    print(first_step)
     return JsonResponse({
         'step_id': first_step.id,
         'text': first_step.text,
@@ -413,21 +414,21 @@ def download_template(request):
             return response
     else:
         return HttpResponse("File not found.", status=404)
-@login_required
+
 
 @csrf_exempt
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('file'):
         file = request.FILES['file']
         df = pd.read_excel(file)
-
+        print(df)
         # Extract data
         data = {
             'flow_name': df['Flow Name'].iloc[0],
             'flow_description': df['Flow Description'].iloc[0],
             'steps': []
         }
-
+        print(data)
         steps = df[['Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']]
         grouped = steps.groupby('Step Number')
 
@@ -443,12 +444,11 @@ def upload_excel(request):
                     'next_step': row['Next Step Number']
                 })
             data['steps'].append(step)
-
         return JsonResponse(data)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-@login_required
 
+@login_required
 def run_flow(request, flow_id):
     flow = get_object_or_404(Flow, id=flow_id)
     first_step = FlowStep.objects.filter(flow=flow).order_by('step_number').first()
@@ -463,6 +463,9 @@ def run_flow(request, flow_id):
         'text': first_step.text,
         'options': list(first_step.options.values('id', 'text'))
     })
+
+
+
 @login_required
 
 def respond(request, step_id, option_id):
