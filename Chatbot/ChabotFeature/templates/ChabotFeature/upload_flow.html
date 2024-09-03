@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Flow{% endblock %}
+
+{% block content %}
+<style>
+    .card {
+        margin-bottom: 20px;
+    }
+    .card-body {
+        padding: 15px;
+    }
+    .grandparent-card {
+        border: 2px solid #ccc;
+    }
+    .parent-card {
+        margin-top: 20px;
+        border: 1px solid #ddd;
+    }
+    .child-card {
+        margin-top: 10px;
+        border: 1px solid #eee;
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    .hidden {
+        display: none;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="card grandparent-card">
+        <div class="card-header">
+            <h2>Upload Flow</h2>
+        </div>
+        <div class="card-body">
+            <form id="createFlowForm">
+                <button type="button" class="btn btn-primary" id="downloadTemplateBtn">Download Template</button>
+                <label for="uploadExcelFile" class="btn btn-primary mt-3">Upload Excel File</label>
+                <input type="file" class="form-control-file hidden" id="uploadExcelFile" accept=".xlsx">
+                
+                <!-- Content to be displayed after uploading file -->
+                <div id="formContent" class="hidden">
+                    <!-- Grandparent Card: Name and Description -->
+                    <div class="card">
+                        <div class="card-header">Flow Details</div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="flowName">Flow Name</label>
+                                <input type="text" class="form-control" id="flowName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="flowDescription">Flow Description</label>
+                                <textarea class="form-control" id="flowDescription" name="description" rows="3" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Steps Container -->
+                    <div id="stepsContainer"></div>
+
+                    <button type="button" class="btn btn-success mt-3" id="addStepBtn">Add Step</button>
+                    <button type="submit" class="btn btn-primary mt-3">Save Flow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let stepCount = 0;
+
+    function updateNextStepOptions() {
+        const steps = $('#stepsContainer .parent-card');
+        steps.each(function(index) {
+            const stepNumber = index + 1;
+            $(this).find('.child-card select[name*="next_step"]').each(function() {
+                const nextStepSelect = $(this);
+                nextStepSelect.empty();
+                steps.each(function(stepIndex) {
+                    if (stepIndex + 1 !== stepNumber) {
+                        nextStepSelect.append(`<option value="${stepIndex + 1}">Step ${stepIndex + 1}</option>`);
+                    }
+                });
+            });
+        });
+    }
+
+    function toggleOptionsState(parentCard) {
+        const isFinalStepChecked = $(parentCard).find('input[name*="is_final_step"]').is(':checked');
+        const nextStepSelects = $(parentCard).find('.child-card select[name*="next_step"]');
+
+        nextStepSelects.each(function() {
+            if (isFinalStepChecked) {
+                $(this).prop('disabled', true);
+                $(this).val('');
+            } else {
+                $(this).prop('disabled', false);
+            }
+        });
+    }
+
+    function addDeleteStepButton(parentCard) {
+        if (!parentCard.find('.delete-step-btn').length) {
+            parentCard.append(`
+                <button type="button" class="btn btn-danger delete-step-btn mt-3">Delete Step</button>
+            `);
+        }
+    }
+
+    function addDeleteOptionButton(childCard) {
+        if (!childCard.find('.delete-option-btn').length) {
+            childCard.append(`
+                <button type="button" class="btn btn-danger delete-option-btn mt-3">Delete Option</button>
+            `);
+        }
+    }
+
+    $(document).on('click', '#addStepBtn', function() {
+        stepCount++;
+        const stepIndex = stepCount - 1;
+        $('#stepsContainer').append(`
+            <div class="card parent-card">
+                <div class="card-header">
+                    Step ${stepCount}
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="stepText${stepCount}">Step Text</label>
+                        <input type="text" class="form-control" id="stepText${stepCount}" name="steps[${stepIndex}][text]" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="isFinalStep${stepCount}">Is Final Step</label>
+                        <input type="checkbox" id="isFinalStep${stepCount}" name="steps[${stepIndex}][is_final_step]">
+                    </div>
+    
+                    <!-- Options Sub-Cards -->
+                    <div class="option-container" id="optionsContainer${stepCount}">
+                        <div class="card child-card">
+                            <div class="card-header">
+                                Option 1
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="optionText${stepCount}_1">Option Text</label>
+                                    <input type="text" class="form-control" id="optionText${stepCount}_1" name="steps[${stepIndex}][options][0][text]" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="nextStep${stepCount}_1">Next Step</label>
+                                    <select class="form-control" id="nextStep${stepCount}_1" name="steps[${stepIndex}][options][0][next_step]" required>
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-danger delete-option-btn mt-3">Delete Option</button>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <button type="button" class="btn btn-primary add-option-btn mt-3">Add Option</button>
+                </div>
+            </div>
+        `);
+    
+        addDeleteStepButton($(`#stepsContainer .parent-card:last-child`)); // Add delete step button
+        updateNextStepOptions();
+    });
+
+    $(document).on('click', '.add-option-btn', function() {
+        const parentCard = $(this).closest('.parent-card');
+        const optionsContainer = parentCard.find('.option-container');
+        const optionCount = optionsContainer.children('.child-card').length + 1;
+        const stepIndex = parentCard.index();
+    
+        optionsContainer.append(`
+            <div class="card child-card">
+                <div class="card-header">
+                    Option ${optionCount}
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="optionText${stepIndex + 1}_${optionCount}">Option Text</label>
+                        <input type="text" class="form-control" id="optionText${stepIndex + 1}_${optionCount}" name="steps[${stepIndex}][options][${optionCount - 1}][text]" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nextStep${stepIndex + 1}_${optionCount}">Next Step</label>
+                        <select class="form-control" id="nextStep${stepIndex + 1}_${optionCount}" name="steps[${stepIndex}][options][${optionCount - 1}][next_step]" required>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-danger delete-option-btn mt-3">Delete Option</button>
+                </div>
+            </div>
+        `);
+    
+        addDeleteOptionButton($(`#optionsContainer${stepIndex + 1} .child-card:last-child`)); // Add delete option button
+        updateNextStepOptions();
+    });
+
+    $(document).on('click', '.delete-option-btn', function() {
+        $(this).closest('.child-card').remove();
+        updateNextStepOptions();
+    });
+
+    $(document).on('click', '.delete-step-btn', function() {
+        $(this).closest('.parent-card').remove();
+        updateNextStepOptions();
+    });
+
+    $(document).on('change', 'input[name*="is_final_step"]', function() {
+        toggleOptionsState($(this).closest('.parent-card'));
+    });
+
+    $('#createFlowForm').on('submit', function(e) {
+        e.preventDefault();
+    
+        let formData = {
+            name: $('#flowName').val(),
+            description: $('#flowDescription').val(),
+            steps: []
+        };
+    
+        $('#stepsContainer .parent-card').each(function(index) {
+            let stepNumber = index + 1; // Step number starts from 1
+            let stepData = {
+                step_number: stepNumber,
+                text: $(this).find(`input[name*="steps[${index}][text]"]`).val(),
+                is_final_step: $(this).find(`input[name*="steps[${index}][is_final_step]"]`).is(':checked'),
+                options: []
+            };
+    
+            $(this).find('.child-card').each(function(optionIndex) {
+                let nextStepNumber = $(this).find(`select[name*="steps[${index}][options][${optionIndex}][next_step]"]`).val() || '';
+                let optionData = {
+                    text: $(this).find(`input[name*="steps[${index}][options][${optionIndex}][text]"]`).val(),
+                    next_step_number: nextStepNumber
+                };
+                stepData.options.push(optionData);
+            });
+    
+            formData.steps.push(stepData);
+        });
+    
+        console.log('Form Data:', formData);
+    
+        // AJAX request to save the form
+        $.ajax({
+            url: '{% url "create_flow" %}',
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            success: function(response) {
+                toastr.success('Flow saved successfully!');
+                window.location.href = "{% url 'flow_view' %}";
+            },
+            error: function(response) {
+                toastr.error('An error occurred while saving the flow.');
+            }
+        });
+    });
+
+    $('#downloadTemplateBtn').on('click', function() {
+        window.location.href = '{% url "download_template" %}';
+    });
+
+    $('#uploadExcelFile').on('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+    
+            $.ajax({
+                url: '{% url "upload_excel" %}', // Update with the correct URL
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Clear existing steps
+                    $('#flowName').val(response.flow_name);
+                    $('#flowDescription').val(response.flow_description);
+                    $('#stepsContainer').empty();
+    
+                    // Populate steps from response
+                    response.steps.forEach((step, index) => {
+                        $('#stepsContainer').append(`
+                            <div class="card parent-card">
+                                <div class="card-header">
+                                    Step ${index + 1}
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="stepText${index + 1}">Step Text</label>
+                                        <input type="text" class="form-control" id="stepText${index + 1}" name="steps[${index}][text]" value="${step.text}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="isFinalStep${index + 1}">Is Final Step</label>
+                                        <input type="checkbox" id="isFinalStep${index + 1}" name="steps[${index}][is_final_step]" ${step.is_final_step ? 'checked' : ''}>
+                                    </div>
+    
+                                    <!-- Options Sub-Cards -->
+                                    <div class="option-container" id="optionsContainer${index + 1}">
+                                        ${step.options.map((option, optionIndex) => `
+                                            <div class="card child-card">
+                                                <div class="card-header">
+                                                    Option ${optionIndex + 1}
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="form-group">
+                                                        <label for="optionText${index + 1}_${optionIndex + 1}">Option Text</label>
+                                                        <input type="text" class="form-control" id="optionText${index + 1}_${optionIndex + 1}" name="steps[${index}][options][${optionIndex}][text]" value="${option.text}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="nextStep${index + 1}_${optionIndex + 1}">Next Step</label>
+                                                        <select class="form-control" id="nextStep${index + 1}_${optionIndex + 1}" name="steps[${index}][options][${optionIndex}][next_step]" required>
+                                                            ${response.steps.filter((_, i) => i !== index).map((_, stepIndex) => `
+                                                                <option value="${stepIndex + 1}" ${option.next_step_number == stepIndex + 1 ? 'selected' : ''}>Step ${stepIndex + 1}</option>
+                                                            `).join('')}
+                                                        </select>
+                                                    </div>
+                                                    <button type="button" class="btn btn-danger delete-option-btn mt-3">Delete Option</button>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <button type="button" class="btn btn-primary add-option-btn mt-3">Add Option</button>
+                                    <button type="button" class="btn btn-danger delete-step-btn mt-3">Delete Step</button>
+                                </div>
+                            </div>
+                        `);
+                    });
+    
+                    $('#formContent').removeClass('hidden'); // Show form content
+                    updateNextStepOptions();
+                },
+                error: function() {
+                    toastr.error('An error occurred while uploading the file.');
+                }
+            });
+        }
+    });
+    
+
+    $(document).ready(function() {
+        updateNextStepOptions();
+    });
+</script>
+
+{% endblock %}

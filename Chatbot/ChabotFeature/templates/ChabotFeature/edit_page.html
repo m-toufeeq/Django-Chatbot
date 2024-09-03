@@ -82,15 +82,29 @@
 <script>
     let stepCount = {{ steps|length }}; // Initialize with existing steps count
 
+    function renumberSteps() {
+        $('.step-container').each(function(index) {
+            $(this).find('.card-title').text(`Question ${index + 1}`);
+            $(this).find('.option-container select').each(function() {
+                $(this).find('option').each(function() {
+                    const optionText = $(this).text().replace(/Question \d+/, `Question ${index + 1}`);
+                    $(this).text(optionText);
+                });
+            });
+        });
+    }
+
     function updateNextStepOptions() {
         $('.step-container').each(function() {
             const stepNumber = $(this).index();
             $(this).find('.option-container select').each(function() {
                 const nextStepSelect = $(this);
+                const selectedOption = nextStepSelect.val();
                 nextStepSelect.empty();
                 $('.step-container').each(function(index) {
                     if (index !== stepNumber) {
-                        nextStepSelect.append(`<option value="${$(this).data('step-id')}">Question ${index + 1}</option>`);
+                        const stepId = $(this).data('step-id');
+                        nextStepSelect.append(`<option value="${stepId}" ${selectedOption == stepId ? 'selected' : ''}>Question ${index + 1}</option>`);
                     }
                 });
             });
@@ -146,7 +160,7 @@
             </div>
         `);
 
-        addDeleteStepButton($('#stepsContainer .step-container:last-child'));
+        renumberSteps();
         updateNextStepOptions();
     });
 
@@ -183,6 +197,7 @@
 
     $(document).on('click', '.delete-step-btn', function() {
         $(this).closest('.step-container').remove();
+        renumberSteps();
         updateNextStepOptions();
     });
 

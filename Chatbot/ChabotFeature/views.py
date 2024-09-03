@@ -256,38 +256,74 @@ def get_flow_details(request, flow_id):
 
 def flowcreate(request):
     return render(request, 'ChabotFeature/FlowCreate.html'  )
-    
-@csrf_exempt
-def create_flow(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            flow_name = data.get('name')
-            flow_description = data.get('description')
-            steps_data = data.get('steps')
-            
-            flow = Flow.objects.create(name=flow_name, description=flow_description)
-            step_mapping = {}
-            
-            for step_data in steps_data:
-                step_number = len(step_mapping) + 1
-                is_final_step = step_data.get('is_final_step', False)
-                step = FlowStep.objects.create(flow=flow, step_number=step_number, text=step_data['text'], is_final_step=is_final_step)
-                step_mapping[step_number] = step
-                
-                options_data = step_data.get('options', [])
-                for option_data in options_data:
-                    next_step_number = option_data.get('next_step')
-                    next_step = step_mapping.get(next_step_number)
-                    FlowOption.objects.create(step=step, text=option_data['text'], next_step=next_step)
-            redirect("flowview")
-            return JsonResponse({'message': 'Flow created successfully!'})
-        
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
-@login_required
+
+@csrf_exempt
+@require_POST
+def create_flow(request):
+    import json
+
+    try:
+        data = json.loads(request.body)
+        flow_name = data.get('name')
+        flow_description = data.get('description')
+        steps = data.get('steps', [])
+        print(data)
+        # Create Flow
+        flow = Flow.objects.create(name=flow_name, description=flow_description)
+
+        # Create FlowSteps and store them in a dictionary for later reference
+        step_map = {}
+        for step_data in steps:
+            step_number = step_data.get('step_number')
+            step_text = step_data.get('text')
+            is_final_step = step_data.get('is_final_step', False)
+
+            # Create FlowStep
+            step = FlowStep.objects.create(
+                flow=flow,
+                step_number=step_number,
+                text=step_text,
+                is_final_step=is_final_step
+            )
+
+            # Store the created FlowStep in the map
+            step_map[step_number] = step
+
+        # Create FlowOptions using the stored FlowSteps
+        for step_data in steps:
+            step_number = step_data.get('step_number')
+            step = step_map.get(step_number)
+            options = step_data.get('options', [])
+            
+            for option_data in options:
+                option_text = option_data.get('text')
+                next_step_number = option_data.get('next_step_number')
+
+                # Determine the next step instance
+                print(step)
+                print(next_step_number)
+
+                next_step = None
+                if next_step_number:
+                    next_step = FlowStep.objects.get(step_number=next_step_number, flow=flow)
+                    print(next_step)
+
+                # Create FlowOption
+                FlowOption.objects.create(
+                    step=step,
+                    text=option_text,
+                    next_step=next_step
+                )
+                
+
+        return JsonResponse({'message': 'Flow created successfully!'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 def flow_view(request):
     flows = Flow.objects.all()
@@ -348,6 +384,7 @@ def respond_view(request, step_id, option_id):
                     'step_id': next_step.id,
                     'options': [{'id': option.id, 'text': option.text} for option in next_step.options.all()],
                 }
+                print(data)
                 
             else:
                 # If it's the final step, no further options
@@ -453,3 +490,6 @@ def respond(request, step_id, option_id):
 
     except FlowStep.DoesNotExist or FlowOption.DoesNotExist:
         return JsonResponse({'error': 'Invalid step or option ID'}, status=400)
+
+def upload_flow(request):
+    return render(request, 'ChabotFeature/upload_flow.html')

@@ -36,4 +36,8 @@ urlpatterns = [
     path('upload-excel/', upload_excel, name='upload_excel'),
 
     path('run_flow/<int:flow_id>/', run_flow, name='run_flow'),
+
+
+    path('uploadflow/', upload_flow, name='upload_flow'),
+    
 ]
