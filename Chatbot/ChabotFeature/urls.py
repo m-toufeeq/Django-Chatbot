@@ -39,5 +39,8 @@ urlpatterns = [
 
 
     path('uploadflow/', upload_flow, name='upload_flow'),
+
+    path('exit_flow/', exit_flow, name='exit_flow'),
+    path('skip_step/<int:step_id>/', skip_step, name='skip_step'),
     
 ]

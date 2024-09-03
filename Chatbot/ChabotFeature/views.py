@@ -496,3 +496,28 @@ def respond(request, step_id, option_id):
 
 def upload_flow(request):
     return render(request, 'ChabotFeature/upload_flow.html')
+
+@login_required
+def skip_step(request, step_id):
+    # Get the current step
+    current_step = get_object_or_404(FlowStep, id=step_id)
+
+    # Find the next step in the flow
+    next_step = FlowStep.objects.filter(flow=current_step.flow, step_number__gt=current_step.step_number).order_by('step_number').first()
+
+    if not next_step:
+        return JsonResponse({'error': 'No further steps available'}, status=404)
+
+    # Return the next step of the flow along with the available options
+    return JsonResponse({
+        'step_id': next_step.id,
+        'text': next_step.text,
+        'options': list(next_step.options.values('id', 'text'))
+    })
+
+@login_required
+def exit_flow(request):
+    # Respond with a courteous goodbye message
+    return JsonResponse({
+        'message': 'Thank you for chatting with us! Have a great day!'
+    })
