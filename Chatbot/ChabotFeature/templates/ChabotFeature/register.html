@@ -1,122 +1,197 @@
 {% extends 'base.html' %}
-
 {% block title %}Sign Up{% endblock %}
-
 {% block content %}
-<div class="container-fluid mt-5">
-    <div class="row" style="height: 100vh;">
-        <!-- Left Partition (70%) -->
-        <div class="col-md-8 left-partition d-flex align-items-center justify-content-center">
-            <!-- You can add content here for the left partition -->
-        </div>
-
-        <!-- Right Partition (30%) -->
-        <div class="col-md-4 d-flex align-items-center justify-content-center" style="background-color: #ffffff;">
-            <div class="signup-form-container">
-                <h2 class="text-center mb-4">Sign Up</h2>
-                <form method="post" id="signupForm">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
+<div class="signup-container">
+    <div class="signup-background"></div>
+    <div class="signup-form-wrapper">
+        <div class="signup-form-container">
+            <h2 class="signup-title">Create Account</h2>
+            <p class="signup-subtitle">Fill in your details to get started</p>
+            <form method="post" id="signupForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
                         <input type="text" class="form-control" id="username" name="username" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                         <input type="email" class="form-control" id="email" name="email" required>
                         <div id="emailError" class="text-danger"></div>
                     </div>
-                    <div class="mb-3">
-                        <label for="password1" class="form-label">Password</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password1" name="password1" required>
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword1">👁️</button>
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="password1" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password1" name="password1" required>
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword1">
+                            <i class="fas fa-eye"></i>
+                        </button>
                         <div id="password1Error" class="text-danger"></div>
                     </div>
-                    <div class="mb-3">
-                        <label for="password2" class="form-label">Confirm Password</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password2" name="password2" required>
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword2">👁️</button>
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="password2" class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password2" name="password2" required>
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword2">
+                            <i class="fas fa-eye"></i>
+                        </button>
                         <div id="password2Error" class="text-danger"></div>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">Sign Up</button>
-                </form>
-                <p class="mt-3 text-center">
-                    Already have an account? <a href="{% url 'login' %}">Login here</a>.
-                </p>
-            </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+            </form>
+            <p class="signup-footer">
+                Already have an account? <a href="{% url 'login' %}">Login here</a>.
+            </p>
         </div>
     </div>
 </div>
 
 <style>
-    .left-partition {
-        background-color: #f8f9fa; /* Optional, you can set a color or leave it transparent */
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs' width='1440' height='560' preserveAspectRatio='none' viewBox='0 0 1440 560'%3e%3cg mask='url(%26quot%3b%23SvgjsMask1000%26quot%3b)' fill='none'%3e%3crect width='1440' height='560' x='0' y='0' fill='%230e2a47'%3e%3c/rect%3e%3cuse xlink:href='%23SvgjsSymbol1007' x='0' y='0'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsSymbol1007' x='720' y='0'%3e%3c/use%3e%3c/g%3e%3cdefs%3e%3cmask id='SvgjsMask1000'%3e%3crect width='1440' height='560' fill='white'%3e%3c/rect%3e%3c/mask%3e%3cpath d='M-1 0 a1 1 0 1 0 2 0 a1 1 0 1 0 -2 0z' id='SvgjsPath1002'%3e%3c/path%3e%3cpath d='M-3 0 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0z' id='SvgjsPath1004'%3e%3c/path%3e%3cpath d='M-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0z' id='SvgjsPath1001'%3e%3c/path%3e%3cpath d='M2 -2 L-2 2z' id='SvgjsPath1005'%3e%3c/path%3e%3cpath d='M6 -6 L-6 6z' id='SvgjsPath1003'%3e%3c/path%3e%3cpath d='M30 -30 L-30 30z' id='SvgjsPath1006'%3e%3c/path%3e%3c/defs%3e%3csymbol id='SvgjsSymbol1007'%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='30' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='30' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='30' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='30' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='30' y='570' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='30' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='90' y='90' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='150' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='90' y='210' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1002' x='90' y='270' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1005' x='90' y='330' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='390' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1001' x='90' y='450' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1003' x='90' y='510' stroke='%231c538e'%3e%3c/use%3e%3cuse xlink:href='%23SvgjsPath1004' x='90' y='570' stroke='%231c538e'%3e%3c/use%3e%3c/symbol%3e%3c/svg%3e");
+    .signup-container {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .signup-background {
+        flex: 1;
+        background-image: url('https://source.unsplash.com/random/1200x800?city');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    .signup-background::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .signup-form-wrapper {
+        flex: 0 0 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ffffff;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+
+    .signup-form-container {
+        width: 100%;
+        max-width: 320px;
+        padding: 40px 20px;
+    }
+
+    .signup-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .signup-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+
+    .form-control {
+        border-left: none;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        padding: 10px 0;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .signup-footer {
+        font-size: 14px;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .signup-footer a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .signup-footer a:hover {
+        text-decoration: underline;
     }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Password visibility toggle
-        document.getElementById('togglePassword1').addEventListener('click', function() {
-            const passwordField = document.getElementById('password1');
-            const type = passwordField.type === 'password' ? 'text' : 'password';
-            passwordField.type = type;
+    $(document).ready(function() {
+        $('#togglePassword1, #togglePassword2').on('click', function() {
+            let $passwordField = $(this).prev('input');
+            let type = $passwordField.attr('type') === 'password' ? 'text' : 'password';
+            $passwordField.attr('type', type);
+            $(this).find('i').toggleClass('fa-eye fa-eye-slash');
         });
 
-        document.getElementById('togglePassword2').addEventListener('click', function() {
-            const passwordField = document.getElementById('password2');
-            const type = passwordField.type === 'password' ? 'text' : 'password';
-            passwordField.type = type;
-        });
-
-        // Form submission
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent default form submission
-
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const password1 = document.getElementById('password1').value;
-            const password2 = document.getElementById('password2').value;
-            const csrfToken = '{{ csrf_token }}';
-
-            if (password1 !== password2) {
-                document.getElementById('password2Error').textContent = 'Passwords do not match!';
-                return;
-            } else {
-                document.getElementById('password2Error').textContent = '';
-            }
-
-            const data = {
-                username: username,
-                email: email,
-                password1: password1,
-                password2: password2,
-                csrfmiddlewaretoken: csrfToken
-            };
-
+        $('#signupForm').on('submit', function(e) {
+            e.preventDefault();
             $.ajax({
                 type: 'POST',
-                url: '{% url "signup" %}',  // Adjust the URL as needed
-                data: data,
+                url: "{% url 'signup' %}",
+                data: $(this).serialize(),
                 success: function(response) {
-                    // Handle success case (e.g., redirect to another page)
-                    window.location.href = response.redirect_url;
-                },  
-                error: function(xhr) {
-                    const errors = xhr.responseJSON.errors;
-                    if (errors.email) {
-                        document.getElementById('emailError').textContent = errors.email;
-                    }
-                    if (errors.password1) {
-                        document.getElementById('password1Error').textContent = errors.password1;
-                    }
+                    toastr.success('Signup successful! Redirecting...');
+                    setTimeout(function() {
+                        window.location.href = '/dashboard/';
+                    }, 1000);
+                },
+                error: function(response) {
+                    toastr.error('There were errors in your form. Please check.');
                 }
             });
         });
     });
 </script>
 {% endblock %}
+d

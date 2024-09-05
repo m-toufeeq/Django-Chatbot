@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from .forms import SignUpForm
 from .models import *
+from django.db.models import Prefetch
 from django.views.decorators.http import require_POST
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -38,7 +39,8 @@ def start_chat(request):
         return JsonResponse({'error': 'No steps found for this flow'}, status=404)
 
     # Return the first step of the flow along with the available options
-    print(first_step)
+    
+
     return JsonResponse({
         'step_id': first_step.id,
         'text': first_step.text,
@@ -48,6 +50,7 @@ def start_chat(request):
 # Handle User Response View
 @login_required
 def handle_response(request, step_id, option_id):
+
     step = FlowStep.objects.get(id=step_id)
     option = FlowOption.objects.get(id=option_id)
 
@@ -60,6 +63,8 @@ def handle_response(request, step_id, option_id):
 
     # Determine the next step
     if option.next_step:
+
+
         next_step = option.next_step
         response_data = {
             'step_id': next_step.id,
@@ -269,7 +274,6 @@ def create_flow(request):
         flow_name = data.get('name')
         flow_description = data.get('description')
         steps = data.get('steps', [])
-        print(data)
         # Create Flow
         flow = Flow.objects.create(name=flow_name, description=flow_description)
 
@@ -302,13 +306,11 @@ def create_flow(request):
                 next_step_number = option_data.get('next_step_number')
 
                 # Determine the next step instance
-                print(step)
-                print(next_step_number)
+                
 
                 next_step = None
                 if next_step_number:
                     next_step = FlowStep.objects.get(step_number=next_step_number, flow=flow)
-                    print(next_step)
 
                 # Create FlowOption
                 FlowOption.objects.create(
@@ -374,18 +376,22 @@ def respond_view(request, step_id, option_id):
             # Retrieve the current step and selected option
             step = get_object_or_404(FlowStep, id=step_id)
             selected_option = get_object_or_404(FlowOption, id=option_id)
-
             # Determine the next step (if exists)
             next_step = selected_option.next_step
-
+            UserResponse.objects.create(
+                    user=UserProfile.objects.get(user=request.user),
+                    step=step,
+                    response=selected_option.text
+                )
             # Prepare response data for JSON
             if next_step:
+
                 data = {
                     'text': next_step.text,
                     'step_id': next_step.id,
                     'options': [{'id': option.id, 'text': option.text} for option in next_step.options.all()],
                 }
-                print(data)
+
                 
             else:
                 # If it's the final step, no further options
@@ -421,14 +427,13 @@ def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('file'):
         file = request.FILES['file']
         df = pd.read_excel(file)
-        print(df)
         # Extract data
         data = {
             'flow_name': df['Flow Name'].iloc[0],
             'flow_description': df['Flow Description'].iloc[0],
             'steps': []
         }
-        print(data)
+
         steps = df[['Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']]
         grouped = steps.groupby('Step Number')
 
@@ -501,10 +506,14 @@ def upload_flow(request):
 def skip_step(request, step_id):
     # Get the current step
     current_step = get_object_or_404(FlowStep, id=step_id)
-
+    UserResponse.objects.create(
+        user=UserProfile.objects.get(user=request.user),
+        step=current_step,
+        response="skip"
+    )
     # Find the next step in the flow
     next_step = FlowStep.objects.filter(flow=current_step.flow, step_number__gt=current_step.step_number).order_by('step_number').first()
-
+    
     if not next_step:
         return JsonResponse({'error': 'No further steps available'}, status=404)
 
@@ -521,3 +530,39 @@ def exit_flow(request):
     return JsonResponse({
         'message': 'Thank you for chatting with us! Have a great day!'
     })
+
+@login_required
+def user_responses(request):
+    user_profile = request.user.userprofile
+    responses = UserResponse.objects.filter(user=user_profile).select_related('step__flow').order_by('-response_date')
+
+    # Prefetch related FlowSteps and FlowOptions
+    flow_steps = FlowStep.objects.prefetch_related(
+        Prefetch('options', queryset=FlowOption.objects.select_related('next_step'))
+    )
+
+    context = {
+        'responses': responses,
+        'flow_steps': flow_steps,
+    }
+    return render(request, 'ChabotFeature/user_responses.html', context)
+
+
+@login_required
+def get_flow_steps(request):
+    flow_id = request.GET.get('flow_id')
+    response_id = request.GET.get('response_id')
+
+    flow = Flow.objects.get(id=flow_id)
+    steps = flow.flowstep_set.all().order_by('step_number')
+    user_responses = UserResponse.objects.filter(id=response_id, step__flow=flow)
+
+    steps_data = []
+    for step in steps:
+        user_response = user_responses.filter(step=step).first()
+        steps_data.append({
+            'text': step.text,
+            'user_response': user_response.response if user_response else None
+        })
+
+    return JsonResponse({'steps': steps_data})

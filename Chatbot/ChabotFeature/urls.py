@@ -42,5 +42,9 @@ urlpatterns = [
 
     path('exit_flow/', exit_flow, name='exit_flow'),
     path('skip_step/<int:step_id>/', skip_step, name='skip_step'),
+
+    path('user_responses/', user_responses, name='user_responses'),
+    path('get_flow_steps/', get_flow_steps, name='get_flow_steps'),
+
     
 ]

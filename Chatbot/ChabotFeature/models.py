@@ -32,6 +32,6 @@ class FlowOption(models.Model):
 class UserResponse(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     step = models.ForeignKey(FlowStep, on_delete=models.CASCADE)
-    response = models.CharField(max_length=100)
+    response = models.CharField(max_length=100, null=True, default=None)
     response_date = models.DateTimeField(auto_now_add=True)
 
