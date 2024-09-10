@@ -5,9 +5,7 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     period_start_date = models.DateField(auto_now_add=True)
-
-
-
+    
 class SymptomLog(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     symptom = models.CharField(max_length=100)
@@ -30,8 +28,8 @@ class FlowOption(models.Model):
     next_step = models.ForeignKey(FlowStep, null=True, blank=True, on_delete=models.SET_NULL, related_name='previous_options')
 
 class UserResponse(models.Model):
+    session_id = models.CharField(max_length=100)  # Store the unique session ID
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     step = models.ForeignKey(FlowStep, on_delete=models.CASCADE)
     response = models.CharField(max_length=100, null=True, default=None)
     response_date = models.DateTimeField(auto_now_add=True)
-

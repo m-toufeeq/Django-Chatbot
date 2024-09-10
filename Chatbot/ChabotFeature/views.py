@@ -12,7 +12,9 @@ from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.core.files.storage import default_storage
 from django.middleware.csrf import get_token
 import pandas as pd
-
+import uuid
+from django.db.models import Min
+from django.db.models import Count
 def flow_buttons(request):
     flows = Flow.objects.all()
     buttons = [{'id': flow.id, 'text': flow.name} for flow in flows]  
@@ -25,7 +27,7 @@ def start_chat(request):
     data = json.loads(request.body)
     flow_text = data.get('flow_text')
     flow_text = flow_text.split("_")[0]
-    #2_flow
+    
     # Retrieve the Flow object based on the button text
     try:
         flow = Flow.objects.get(id=flow_text)
@@ -38,49 +40,17 @@ def start_chat(request):
     if not first_step:
         return JsonResponse({'error': 'No steps found for this flow'}, status=404)
 
-    # Return the first step of the flow along with the available options
-    
+    # Generate a unique session ID and store it in the session
+    session_id = str(uuid.uuid4())  # Generate unique session ID
+    request.session['session_id'] = session_id
 
+    # Return the first step of the flow along with the available options
     return JsonResponse({
         'step_id': first_step.id,
         'text': first_step.text,
-        'options': list(first_step.options.values('id', 'text'))
+        'options': list(first_step.options.values('id', 'text')),
+        'session_id': session_id
     })
-
-# Handle User Response View
-@login_required
-def handle_response(request, step_id, option_id):
-
-    step = FlowStep.objects.get(id=step_id)
-    option = FlowOption.objects.get(id=option_id)
-
-    # Save the user's response
-    UserResponse.objects.create(
-        user=UserProfile.objects.get(user=request.user),
-        step=step,
-        response=option.text
-    )
-
-    # Determine the next step
-    if option.next_step:
-
-
-        next_step = option.next_step
-        response_data = {
-            'step_id': next_step.id,
-            'text': next_step.text,
-            'options': list(next_step.options.values('id', 'text'))
-        }
-    else:
-        # End of flow
-        response_data = {
-            'text': "Thank you for completing the flow!",
-            'options': []
-        }
-
-    return JsonResponse(response_data)
-
-
 @login_required
 def index(request):
     flow = Flow.objects.all()
@@ -267,8 +237,6 @@ def flowcreate(request):
 @csrf_exempt
 @require_POST
 def create_flow(request):
-    import json
-
     try:
         data = json.loads(request.body)
         flow_name = data.get('name')
@@ -369,6 +337,7 @@ def update_flow(request, flow_id):
 
         return JsonResponse({'success': True})
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 @login_required
 def respond_view(request, step_id, option_id):
     if request.method == 'GET':
@@ -376,25 +345,33 @@ def respond_view(request, step_id, option_id):
             # Retrieve the current step and selected option
             step = get_object_or_404(FlowStep, id=step_id)
             selected_option = get_object_or_404(FlowOption, id=option_id)
+
             # Determine the next step (if exists)
             next_step = selected_option.next_step
-            UserResponse.objects.create(
-                    user=UserProfile.objects.get(user=request.user),
-                    step=step,
-                    response=selected_option.text
-                )
+
+            # Retrieve the session ID from the request session
+            session_id = request.session.get('session_id', None)
+            if not session_id:
+                return JsonResponse({'error': 'Session not found'}, status=400)
+
+            # Store user response with the session ID
+            user_response = UserResponse.objects.create(
+                user=UserProfile.objects.get(user=request.user),
+                step=step,
+                response=selected_option.text,
+                session_id=session_id
+            )
+
             # Prepare response data for JSON
             if next_step:
-
                 data = {
                     'text': next_step.text,
                     'step_id': next_step.id,
                     'options': [{'id': option.id, 'text': option.text} for option in next_step.options.all()],
                 }
-
-                
             else:
-                # If it's the final step, no further options
+                # If it's the final step, clear the session and return final message
+                request.session.pop('session_id', None)  # End session
                 data = {
                     'text': "This is the final step.",
                     'step_id': None,
@@ -406,8 +383,8 @@ def respond_view(request, step_id, option_id):
             return JsonResponse({'error': 'Step not found'}, status=404)
         except FlowOption.DoesNotExist:
             return JsonResponse({'error': 'Option not found'}, status=404)
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 @login_required
 
@@ -438,17 +415,21 @@ def upload_excel(request):
         grouped = steps.groupby('Step Number')
 
         for step_number, group in grouped:
+            
             step = {
                 'text': group['Step Text'].iloc[0],
-                'is_final_step': group['Is Final Step'].iloc[0] == 'True',
+                'is_final_step': bool(group['Is Final Step'].iloc[0]),
                 'options': []
             }
+            # print(step["is_final_step"])
             for _, row in group.iterrows():
                 step['options'].append({
                     'text': row['Option Text'],
                     'next_step': row['Next Step Number']
                 })
+                # print(step['options'])
             data['steps'].append(step)
+        # print(data)
         return JsonResponse(data)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -526,36 +507,19 @@ def skip_step(request, step_id):
 
 @login_required
 def exit_flow(request):
-    # Respond with a courteous goodbye message
-    return JsonResponse({
-        'message': 'Thank you for chatting with us! Have a great day!'
-    })
-
-@login_required
-def user_responses(request):
-    user_profile = request.user.userprofile
-    responses = UserResponse.objects.filter(user=user_profile).select_related('step__flow').order_by('-response_date')
-
-    # Prefetch related FlowSteps and FlowOptions
-    flow_steps = FlowStep.objects.prefetch_related(
-        Prefetch('options', queryset=FlowOption.objects.select_related('next_step'))
-    )
-
-    context = {
-        'responses': responses,
-        'flow_steps': flow_steps,
-    }
-    return render(request, 'ChabotFeature/user_responses.html', context)
-
+    session_id = request.session.pop('session_id', None)
+    if session_id:
+        return JsonResponse({'message': 'Flow exited successfully. Your session has ended.'})
+    return JsonResponse({'error': 'No active session found.'}, status=400)
 
 @login_required
 def get_flow_steps(request):
     flow_id = request.GET.get('flow_id')
-    response_id = request.GET.get('response_id')
+    session_id = request.GET.get('session_id')
 
     flow = Flow.objects.get(id=flow_id)
     steps = flow.flowstep_set.all().order_by('step_number')
-    user_responses = UserResponse.objects.filter(id=response_id, step__flow=flow)
+    user_responses = UserResponse.objects.filter(session_id=session_id, step__flow=flow)
 
     steps_data = []
     for step in steps:
@@ -566,3 +530,31 @@ def get_flow_steps(request):
         })
 
     return JsonResponse({'steps': steps_data})
+
+@login_required
+def user_responses(request):
+    user_profile = request.user.userprofile
+
+    # Fetch the first response per unique session_id
+    unique_sessions = (
+        UserResponse.objects
+        .filter(user=user_profile)
+        .values('session_id')  # Group by session_id
+        .annotate(first_response_date=Min('response_date'))  # Get the earliest response per session
+        .order_by('first_response_date')
+    )
+    print(unique_sessions)
+    # Fetch the corresponding flow and step data
+    responses = []
+    for session in unique_sessions:
+        # Get the first UserResponse for the session to display in the table
+        response = UserResponse.objects.filter(
+            user=user_profile, session_id=session['session_id']
+        ).order_by('response_date').first()
+        responses.append(response)
+
+    context = {
+        'responses': responses,
+    }
+    
+    return render(request, 'ChabotFeature/user_responses.html', context)

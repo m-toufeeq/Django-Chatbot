@@ -91,17 +91,16 @@
     function toggleOptionsState(parentCard) {
         const isFinalStepChecked = $(parentCard).find('input[name*="is_final_step"]').is(':checked');
         const nextStepSelects = $(parentCard).find('.child-card select[name*="next_step"]');
-
+    
         nextStepSelects.each(function() {
             if (isFinalStepChecked) {
                 $(this).prop('disabled', true);
-                $(this).val('');
+                $(this).val(''); // Clear value when disabled
             } else {
                 $(this).prop('disabled', false);
             }
         });
     }
-
     function addDeleteStepButton(parentCard) {
         if (!parentCard.find('.delete-step-btn').length) {
             parentCard.append(`
@@ -264,7 +263,7 @@
         window.location.href = '{% url "download_template" %}';
     });
 
-    $('#uploadExcelFile').on('change', function(event) {
+       $('#uploadExcelFile').on('change', function(event) {
         const file = event.target.files[0];
         if (file) {
             const formData = new FormData();

@@ -7,6 +7,7 @@
 <table id="user-responses" class="display">
     <thead>
         <tr>
+            <th>Session ID</th>
             <th>Flow Name</th>
             <th>Date and Time Created</th>
             <th>Actions</th>
@@ -15,10 +16,11 @@
     <tbody>
         {% for response in responses %}
         <tr>
+            <td>{{ response.session_id }}</td>
             <td>{{ response.step.flow.name }}</td>
             <td>{{ response.response_date|date:"Y-m-d H:i" }}</td>
             <td>
-                <button class="review-flow-btn" data-flow-id="{{ response.step.flow.id }}" data-response-id="{{ response.id }}">Review Flow</button>
+                <button class="review-flow-btn" data-flow-id="{{ response.step.flow.id }}" data-session-id="{{ response.session_id }}">Review Flow</button>
             </td>
         </tr>
         {% endfor %}
@@ -34,7 +36,6 @@
     </div>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
@@ -48,18 +49,18 @@
 
         $('.review-flow-btn').on('click', function() {
             var flowId = $(this).data('flow-id');
-            var responseId = $(this).data('response-id');
-            var flowName = $(this).closest('tr').find('td:first').text();
+            var sessionId = $(this).data('session-id');
+            var flowName = $(this).closest('tr').find('td:nth-child(2)').text();  // Get the Flow Name from the second column
             
             // Set the flow name in the modal
             $('#modalFlowName').text(flowName);
             
-            // AJAX call to get flow steps and user responses
+            // AJAX call to get flow steps and user responses for the session
             $.ajax({
                 url: '{% url "get_flow_steps" %}',
                 data: {
                     'flow_id': flowId,
-                    'response_id': responseId
+                    'session_id': sessionId
                 },
                 dataType: 'json',
                 success: function(data) {
