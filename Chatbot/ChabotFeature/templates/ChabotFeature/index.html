@@ -1,244 +1,83 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Chatbot Dashboard{% endblock %}
+{% block title %}Home Page{% endblock %}
+{% load static %}
+{% block extra_css %}
+<style>
+    /* Apply snap scroll to the container */
+    html, body {
+        margin: 0;
+        height: 100%;
+        scroll-snap-type: y mandatory;
+        overflow-y: scroll;
+    }
+
+    /* Make the navbar fixed at the top */
+    .navbar-custom {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 9999; /* Ensure it's above other content */
+    }
+
+    /* Ensure sections fit the full viewport */
+    .section {
+        position: relative;
+        height: 100vh; /* Full viewport height */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        scroll-snap-align: start;
+        overflow: hidden;
+    }
+
+    /* Placeholder image styles */
+    .section img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.5; /* Make the image translucent */
+    }
+
+    /* Button style */
+    .section .btn {
+        position: relative;
+        z-index: 1; /* Ensure button stays above the image */
+        padding: 15px 30px;
+        background-color: transparent;
+        border: 2px solid black;
+        color: black;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        border-radius: 25px; /* Makes the corners rounded */
+    }
+
+    /* Hover effect for button */
+    .section .btn:hover {
+        background-color: rgba(255, 255, 255, 3); /* Slight translucent effect on hover */
+    }
+
+    /* Offset the body content to avoid it being hidden under the navbar */
+    body {
+        margin-top: 70px;
+    }
+
+</style>
+{% endblock %}
 
 {% block content %}
-
-<div class="container mt-5">
-
-    <div class="card mt-4">
-        <div class="card-header"style="font-size: 2.5rem;">
-            <strong>
-                Chat Interface
-            </strong>
-        </div>
-        <div class="card-body">
-            <div id="chat-window" class="border p-3" style="height: 500px; overflow-y: auto;">
-                <!-- Chat messages will be appended here -->
-            </div>
-            <div id="chat-input" class="mt-3">
-                
-                <!-- Container for dynamically generated buttons -->
-                <div id="flow-buttons" class="mt-3"></div>
-            </div>
-        </div>
-    </div>
+<div class="section section1">
+    <img src="{% static "images/snapscroll1.jpg" %}" alt="Placeholder Image">
+    <a class="btn" href="{% url 'upload_flow' %}">Upload your flow</a>
 </div>
-
-<style>
-    /* Basic styles for the chat interface */
-    .chat-message {
-        margin: 5px 0;
-        padding: 8px;
-        border-radius: 5px;
-        background-color: #f8f9fa;
-    }
-    .chat-message.user {
-        text-align: right;
-        background-color: #d1e7dd;
-    }
-    .chat-message.bot {
-        text-align: left;
-        background-color: #e9ecef;
-    }
-    .chat-option {
-        display: inline-block;
-        margin: 5px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px;
-        cursor: pointer;
-    }
-    .chat-option:hover {
-        background-color: #0056b3;
-    }
-    .flow-button {
-        margin: 5px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px;
-        cursor: pointer;
-    }
-    .flow-button:hover {
-        background-color: #0056b3;
-    }
-    /* Align Skip and Exit buttons side by side */
-    .button-container {
-        display: flex;
-        justify-content: flex-start;
-        margin-top: 10px;
-    }
-    .button-container button {
-        margin-right: 10px;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-
-        // Function to start chat with a specific flow
-        function startChatWithFlow(flowText) {
-            fetch('/start_chat/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({ flow_text: flowText })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Error:', data.error);
-                } else {
-                    renderChatStep(data);  // Start with the first step
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Function to render the chat step and options
-        function renderChatStep(step) {
-            const chatWindow = document.getElementById('chat-window');
-
-            // Add the bot's message to the chat window
-            const botMessage = document.createElement('div');
-            botMessage.className = 'chat-message bot';
-            botMessage.innerText = step.text;
-            chatWindow.appendChild(botMessage);
-
-            // Render the options (if available)
-            if (step.options && step.options.length > 0) {
-                step.options.forEach(option => {
-                    const button = document.createElement('button');
-                    button.innerText = option.text;
-                    button.className = 'chat-option';
-                    button.onclick = () => sendResponse(step.step_id, option.id);  // Send response on click
-                    chatWindow.appendChild(button);
-                });
-            }
-
-            // Create a container for Skip and Exit buttons to align them side by side
-            const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'button-container';
-
-            // Create Skip button and set it to green
-            const skipButton = document.createElement('button');
-            skipButton.innerText = 'Skip';
-            skipButton.className = 'chat-option';
-            skipButton.style.backgroundColor = 'green';  // Set background color to green
-            skipButton.style.color = 'white';  // Set text color to white for better contrast
-            skipButton.style.width = '100px';  // Set width to ensure both buttons are the same size
-            skipButton.style.padding = '10px'; // Optional: Set padding for better appearance
-            skipButton.onclick = () => skipStep(step.step_id);
-            buttonContainer.appendChild(skipButton);
-
-            // Add Exit button and set it to red
-            const exitButton = document.createElement('button');
-            exitButton.innerText = 'Exit';
-            exitButton.className = 'chat-option';
-            exitButton.style.backgroundColor = 'red';  // Set background color to red
-            exitButton.style.color = 'white';  // Set text color to white for better contrast
-            exitButton.style.width = '100px';  // Set width to ensure both buttons are the same size
-            exitButton.style.padding = '10px'; // Optional: Set padding for better appearance
-            exitButton.onclick = exitFlow;
-            buttonContainer.appendChild(exitButton);
-
-;
-
-            // Append the button container to the chat window
-            chatWindow.appendChild(buttonContainer);
-
-            // Scroll to the bottom of the chat window
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        // Function to send user response based on selected option
-        function sendResponse(stepId, optionId) {
-            fetch(`/respond/${stepId}/${optionId}/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Error:', data.error);
-                } else {
-                    console.log(data); 
-                    renderChatStep(data);
-                      // Render the next chat step
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Function to skip the current step
-        function skipStep(stepId) {
-            fetch(`/skip_step/${stepId}/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Error:', data.error);
-                } else {
-                    renderChatStep(data);  // Render the next chat step
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Function to exit the flow
-        function exitFlow() {
-            fetch('/exit_flow/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Error:', data.error);
-                } else {
-                    const chatWindow = document.getElementById('chat-window');
-                    
-                    // Display the goodbye message
-                    const goodbyeMessage = document.createElement('div');
-                    goodbyeMessage.className = 'chat-message bot';
-                    goodbyeMessage.innerText = data.message;
-                    chatWindow.appendChild(goodbyeMessage);
-
-                    // Disable all buttons after the goodbye message
-                    disableAllButtons(chatWindow);
-
-                    // Scroll to the bottom of the chat window
-                    chatWindow.scrollTop = chatWindow.scrollHeight;
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Function to disable all buttons within the chat window
-        function disableAllButtons(chatWindow) {
-            const buttons = chatWindow.querySelectorAll('button');
-            buttons.forEach(button => {
-                button.disabled = true;
-                button.style.cursor = 'not-allowed';
-                button.style.opacity = '0.6';
-            });
-        }
-
-        // Fetch and render Flow buttons dynamically
-        fetch('/flow_buttons/')
-        .then(response => response.json())
-        .then(buttons => {
-            const container = document.getElementById('flow-buttons');
-            buttons.forEach(buttonData => {
-                const button = document.createElement('button');
-                button.innerText = buttonData.text;
-                button.className = 'flow-button';
-                button.onclick = () => startChatWithFlow(buttonData.id + "_flow");
-                container.appendChild(button);
-            });
-        })
-        .catch(error => console.error('Error fetching flow buttons:', error));
-    });
-</script>
+<div class="section section2">
+    <img src="{% static "images/snapscroll2.jpg" %}" alt="Placeholder Image">
+    <a class="btn" href="{% url 'flowview' %}">See All Flows</a>
+</div>
 
 
 {% endblock %}

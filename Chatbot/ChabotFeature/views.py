@@ -399,7 +399,6 @@ def download_template(request):
     else:
         return HttpResponse("File not found.", status=404)
 
-
 @csrf_exempt
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('file'):
@@ -411,8 +410,7 @@ def upload_excel(request):
             'flow_description': df['Flow Description'].iloc[0],
             'steps': []
         }
-        # if x==1:
-        #     return JsonResponse({'error': 'Invalid request'}, status=400)
+        print(df)
             
         steps = df[['Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']]
         grouped = steps.groupby('Step Number')

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Sign Up{% endblock %}
 {% block content %}
+{% load static %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -103,21 +104,28 @@
             height: auto;
             max-width: 500px;
         }
+        .navbar-logo-container {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            margin-bottom: 20px; /* Space between logo and title */
+        }
+        .navbar-logo {
+            height: 60px;  /* Adjust height if needed */
+            width: auto;
+            display: block;  
+        }
     </style>
 </head>
 <body>
     <div class="signup-container">
         <div class="signup-background">
-            <svg class="cool-image" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-                <rect width="800" height="600" fill="#f0f4f8"/>
-                <circle cx="400" cy="300" r="250" fill="#4a90e2" opacity="0.7"/>
-                <circle cx="500" cy="200" r="180" fill="#3a7bc8" opacity="0.5"/>
-                <circle cx="300" cy="400" r="200" fill="#6ab0f3" opacity="0.6"/>
-                <path d="M200,500 Q400,100 600,500" stroke="#ffffff" stroke-width="10" fill="none"/>
-            </svg>
+            <img src="{% static 'images/techsasoft-logo-1.png' %}" alt="Background Image">
         </div>
         <div class="signup-form-wrapper">
             <div class="signup-form-container">
+                <div class="navbar-logo-container">
+                    <img src="{% static 'images/techsasoft-logo-1.png' %}" alt="Logo" class="navbar-logo">
+                </div>
                 <h2 class="signup-title">Create Account</h2>
                 <p class="signup-subtitle">Fill in your details to get started</p>
                 <form id="signupForm" method="post">

@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Login{% endblock %}
 {% block content %}
+{% load static %}
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,11 +26,16 @@
         }
         .login-background {
             flex: 1;
-            background-color: #f0f4f8;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            overflow: hidden; /* Ensure no overflow */
+        }
+        .login-background img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the image covers the container */
         }
         .login-form-wrapper {
             flex: 0 0 400px;
@@ -107,21 +114,28 @@
             height: auto;
             max-width: 500px;
         }
+        .navbar-logo-container {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            margin-bottom: 20px; /* Space between logo and title */
+        }
+        .navbar-logo {
+            height: 60px;  /* Adjust height if needed */
+            width: auto;
+            display: block;  
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-background">
-            <svg class="cool-image" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-                <rect width="800" height="600" fill="#f0f4f8"/>
-                <circle cx="400" cy="300" r="250" fill="#4a90e2" opacity="0.7"/>
-                <circle cx="500" cy="200" r="180" fill="#3a7bc8" opacity="0.5"/>
-                <circle cx="300" cy="400" r="200" fill="#6ab0f3" opacity="0.6"/>
-                <path d="M150,450 Q400,200 650,450" stroke="#ffffff" stroke-width="10" fill="none"/>
-            </svg>
+            <img src="{%static "images/chatbotimage.jpg"%}">
         </div>
         <div class="login-form-wrapper">
             <div class="login-form-container">
+                <div class="login-background">
+                    <img src="{% static 'images/techsasoft-logo-1.png' %}" alt="Background Image">
+                </div>
                 <h2 class="login-title">Welcome Back</h2>
                 <p class="login-subtitle">Please enter your details to sign in</p>
                 <form id="loginForm" method="post">
@@ -150,7 +164,7 @@
                     <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                 </form>
                 <p class="login-footer">
-                    Don't have an account? <a href="{%url "signup"%}">Sign up here</a>
+                    Don't have an account? <a href="{%url 'signup'%}">Sign up here</a>
                 </p>
             </div>
         </div>

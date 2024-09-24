@@ -3,21 +3,34 @@
 {% block title %}Chat Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5" style="max-width: 1200px;">  <!-- Increased max-width for larger container -->
     <h1 class="text-center">Run Flow: {{ flow.name }}</h1>
+    
+    <!-- New section divided into 2 parts -->
     <div class="row justify-content-center mt-5">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <div id="chat-interface">
-                        <div id="chat-container">
-                            <p id="step-text">{{ text }}</p>
-                            <div id="options-container" class="mt-4">
-                                {% for option in options %}
-                                <button class="btn btn-primary chat-option mt-2" data-step-id="{{ step_id }}" data-option-id="{{ option.id }}">
-                                    {{ option.text }}
-                                </button>
-                                {% endfor %}
+                    <div class="row">
+                        <div class="col-6 d-flex align-items-center justify-content-center" style="height: 500px;">  <!-- Adjusted height -->
+                            <!-- Left: GIF Placeholder -->
+                            <div class="placeholder bg-light" style="width: 100%; height: 100%; position: relative;">
+                                <iframe src="https://giphy.com/embed/S60CrN9iMxFlyp7uM8" style="width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0;" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex align-items-center justify-content-center" style="height: 500px; background-color: #f8f9fa;">  <!-- Light gray background -->
+                            <!-- Right: Chatbot Flow -->
+                            <div id="chat-interface" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <div id="chat-container" style="text-align: center;">  <!-- Centered content -->
+                                    <p id="step-text">{{ text }}</p>
+                                    <div id="options-container" class="mt-4">
+                                        {% for option in options %}
+                                        <button class="btn btn-primary chat-option mt-2" data-step-id="{{ step_id }}" data-option-id="{{ option.id }}">
+                                            {{ option.text }}
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -26,6 +39,7 @@
         </div>
     </div>
 </div>
+
 <script>
     $(document).ready(function () {
         // Chatbot interaction

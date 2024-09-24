@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,9 +19,25 @@
             padding: 15px 0;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 0;  
+        }
+        .navbar-logo-container {
+            padding-left: 15px;  
+        }
+        .navbar-logo {
+            height: 40px;  
+            width: auto;
+            display: block;  
+        }
         .navbar-nav {
             flex-direction: row;
             justify-content: center;
+            margin: 0 auto;
+            padding-right: 15px;  
         }
         .nav-item {
             margin: 0 15px;
@@ -73,8 +90,11 @@
     {% if request.user.is_authenticated %}
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <ul class="navbar-nav mx-auto">
+        <div class="container navbar-container">
+            <div class="navbar-logo-container">
+                <img src="{% static 'images/techsasoft-logo-1.png' %}" alt="Logo" class="navbar-logo">
+            </div>
+            <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'index' %}">Chatbot</a>
                 </li>

@@ -37,9 +37,11 @@
         </div>
         <div class="card-body">
             <form id="createFlowForm">
-                <button type="button" class="btn btn-primary" id="downloadTemplateBtn">Download Template</button>
-                <label for="uploadExcelFile" class="btn btn-primary mt-3">Upload Excel File</label>
-                <input type="file" class="form-control-file hidden" id="uploadExcelFile" accept=".xlsx">
+                <div class="d-flex align-items-center mb-3">
+                    <label for="uploadExcelFile" class="btn btn-primary me-2">Upload Excel File</label>
+                    <button type="button" class="btn btn-primary" id="downloadTemplateBtn">Download Template</button>
+                    <input type="file" class="form-control-file hidden" id="uploadExcelFile" accept=".xlsx">
+                </div>
                 
                 <!-- Content to be displayed after uploading file -->
                 <div id="formContent" class="hidden">
