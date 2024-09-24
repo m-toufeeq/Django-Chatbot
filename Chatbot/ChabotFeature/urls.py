@@ -45,6 +45,4 @@ urlpatterns = [
 
     path('user_responses/', user_responses, name='user_responses'),
     path('get_flow_steps/', get_flow_steps, name='get_flow_steps'),
-
-    
 ]

@@ -1,169 +1,194 @@
 {% extends 'base.html' %}
 {% block title %}Sign Up{% endblock %}
 {% block content %}
-<div class="signup-container">
-    <div class="signup-background"></div>
-    <div class="signup-form-wrapper">
-        <div class="signup-form-container">
-            <h2 class="signup-title">Create Account</h2>
-            <p class="signup-subtitle">Fill in your details to get started</p>
-            <form method="post" id="signupForm">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="username" class="form-label">Username</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-user"></i></span>
-                        <input type="text" class="form-control" id="username" name="username" required>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        .signup-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .signup-background {
+            flex: 1;
+            background-color: #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .signup-form-wrapper {
+            flex: 0 0 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        .signup-form-container {
+            width: 100%;
+            max-width: 320px;
+            padding: 40px 20px;
+        }
+        .signup-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .signup-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+        .form-control {
+            border-left: none;
+        }
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #4a90e2;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+            padding: 12px 0;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            border-radius: 25px;
+        }
+        .btn-primary:hover {
+            background-color: #3a7bc8;
+            border-color: #3a7bc8;
+        }
+        .signup-footer {
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .signup-footer a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        .signup-footer a:hover {
+            text-decoration: underline;
+        }
+        .cool-image {
+            width: 80%;
+            height: auto;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-background">
+            <svg class="cool-image" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                <rect width="800" height="600" fill="#f0f4f8"/>
+                <circle cx="400" cy="300" r="250" fill="#4a90e2" opacity="0.7"/>
+                <circle cx="500" cy="200" r="180" fill="#3a7bc8" opacity="0.5"/>
+                <circle cx="300" cy="400" r="200" fill="#6ab0f3" opacity="0.6"/>
+                <path d="M200,500 Q400,100 600,500" stroke="#ffffff" stroke-width="10" fill="none"/>
+            </svg>
+        </div>
+        <div class="signup-form-wrapper">
+            <div class="signup-form-container">
+                <h2 class="signup-title">Create Account</h2>
+                <p class="signup-subtitle">Fill in your details to get started</p>
+                <form id="signupForm" method="post">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
                         <div id="emailError" class="text-danger"></div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="password1" class="form-label">Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                        <input type="password" class="form-control" id="password1" name="password1" required>
-                        <button type="button" class="btn btn-outline-secondary" id="togglePassword1">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                    <div class="form-group">
+                        <label for="password1" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password1" name="password1" required>
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword1">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                         <div id="password1Error" class="text-danger"></div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="password2" class="form-label">Confirm Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                        <input type="password" class="form-control" id="password2" name="password2" required>
-                        <button type="button" class="btn btn-outline-secondary" id="togglePassword2">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                    <div class="form-group">
+                        <label for="password2" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password2" name="password2" required>
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                         <div id="password2Error" class="text-danger"></div>
                     </div>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
-            </form>
-            <p class="signup-footer">
-                Already have an account? <a href="{% url 'login' %}">Login here</a>.
-            </p>
+                    <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                </form>
+                <p class="signup-footer">
+                    Already have an account? <a href="{%url "login"%}">Login here</a>
+                </p>
+            </div>
         </div>
     </div>
-</div>
 
-<style>
-    .signup-container {
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-    }
+    <script>
+        $(document).ready(function() {
+            $('#togglePassword1, #togglePassword2').on('click', function() {
+                let $passwordField = $(this).prev('input');
+                let type = $passwordField.attr('type') === 'password' ? 'text' : 'password';
+                $passwordField.attr('type', type);
+                $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+            });
 
-    .signup-background {
-        flex: 1;
-        background-image: url('https://source.unsplash.com/random/1200x800?city');
-        background-size: cover;
-        background-position: center;
-        position: relative;
-    }
-
-    .signup-background::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
-    }
-
-    .signup-form-wrapper {
-        flex: 0 0 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #ffffff;
-        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-        z-index: 1;
-    }
-
-    .signup-form-container {
-        width: 100%;
-        max-width: 320px;
-        padding: 40px 20px;
-    }
-
-    .signup-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    .signup-subtitle {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 30px;
-        text-align: center;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 5px;
-    }
-
-    .input-group-text {
-        background-color: #f8f9fa;
-        border-right: none;
-    }
-
-    .form-control {
-        border-left: none;
-    }
-
-    .form-control:focus {
-        box-shadow: none;
-        border-color: #ced4da;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-        padding: 10px 0;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
-    }
-
-    .signup-footer {
-        font-size: 14px;
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    .signup-footer a {
-        color: #007bff;
-        text-decoration: none;
-    }
-
-    .signup-footer a:hover {
-        text-decoration: underline;
-    }
-</style>
+            $('#signupForm').on('submit', function(e) {
+                e.preventDefault();
+                // Simulated signup process
+                setTimeout(function() {
+                    toastr.success('Signup successful! Redirecting...');
+                    setTimeout(function() {
+                        window.location.href = '/dashboard/';
+                    }, 1000);
+                }, 1000);
+            });
+        });
+    </script>
+</body>
 
 <script>
     $(document).ready(function() {

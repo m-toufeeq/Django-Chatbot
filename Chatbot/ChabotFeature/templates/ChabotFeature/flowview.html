@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
-
 {% block title %}View Flows{% endblock %}
-
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 <div class="container mt-5">
-    <h1>View Flows</h1>
     <div class="card mt-4">
+        <div class="card-header"style = "font-size: 2.5rem;">
+        <strong>
+            FlowView
+        </strong>
+        </div>
         <div class="card-body">
             <table id="flowsTable" class="table table-striped">
                 <thead>
@@ -21,11 +24,13 @@
                         <td>{{ flow.name }}</td>
                         <td>{{ flow.description }}</td>
                         <td>
-                            <a href="{% url "edit_flow" flow.id %}" class="btn btn-primary edit-btn">Edit</a>
-                            <a href="{% url 'run_flow' flow.id %}" class="btn btn-primary">Run Flow</a>
-
+                            <a href="{% url "edit_flow" flow.id %}" class="btn btn-primary edit-btn">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <a href="{% url 'run_flow' flow.id %}" class="btn btn-primary">
+                                <i class="bi bi-play-fill"></i> Run Flow
+                            </a>
                         </td>
-                        
                     </tr>
                     {% endfor %}
                 </tbody>

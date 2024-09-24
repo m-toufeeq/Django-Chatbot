@@ -223,7 +223,6 @@
                 const nextStep = $(this).find('select').val();
                 options.push({ id: optionId, text: optionText, next_step: nextStep });
             });
-
             data.steps.push({
                 id: stepId,
                 text: stepText,
@@ -231,7 +230,8 @@
                 options: options
             });
         });
-
+        console.log(data);
+        debugger;
         $.ajax({
             url: `/flows/update/${flowId}/`,
             type: 'POST',

@@ -2,30 +2,32 @@
 {% load static %}
 
 {% block content %}
-<h1>Your Responses</h1>
+<div class="container">
+    <h1 class="page-title">Your Responses</h1>
 
-<table id="user-responses" class="display">
-    <thead>
-        <tr>
-            <th>Session ID</th>
-            <th>Flow Name</th>
-            <th>Date and Time Created</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for response in responses %}
-        <tr>
-            <td>{{ response.session_id }}</td>
-            <td>{{ response.step.flow.name }}</td>
-            <td>{{ response.response_date|date:"Y-m-d H:i" }}</td>
-            <td>
-                <button class="review-flow-btn" data-flow-id="{{ response.step.flow.id }}" data-session-id="{{ response.session_id }}">Review Flow</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table id="user-responses" class="display">
+        <thead>
+            <tr>
+                <th>Session ID</th>
+                <th>Flow Name</th>
+                <th>Date and Time Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for response in responses %}
+            <tr>
+                <td>{{ response.session_id }}</td>
+                <td>{{ response.step.flow.name }}</td>
+                <td>{{ response.response_date|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <button class="review-flow-btn" data-flow-id="{{ response.step.flow.id }}" data-session-id="{{ response.session_id }}">Review Flow</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 <!-- Modal for Flow Review -->
 <div id="flowReviewModal" class="modal">
@@ -36,26 +38,28 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
 <script>
     $(document).ready(function() {
-        $('#user-responses').DataTable();
+        $('#user-responses').DataTable({
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "responsive": true
+        });
 
-        // Flow Review Modal
         var modal = document.getElementById("flowReviewModal");
         var span = document.getElementsByClassName("close")[0];
 
         $('.review-flow-btn').on('click', function() {
             var flowId = $(this).data('flow-id');
             var sessionId = $(this).data('session-id');
-            var flowName = $(this).closest('tr').find('td:nth-child(2)').text();  // Get the Flow Name from the second column
+            var flowName = $(this).closest('tr').find('td:nth-child(2)').text();
             
-            // Set the flow name in the modal
             $('#modalFlowName').text(flowName);
             
-            // AJAX call to get flow steps and user responses for the session
             $.ajax({
                 url: '{% url "get_flow_steps" %}',
                 data: {
@@ -67,10 +71,12 @@
                     var stepsHtml = '';
                     data.steps.forEach(function(step, index) {
                         stepsHtml += '<div class="step">';
-                        stepsHtml += '<h3>Step ' + (index + 1) + ': ' + step.text + '</h3>';
+                        stepsHtml += '<h3>Question ' + (index + 1) + ': ' + step.text + '</h3>';
                         stepsHtml += '<p><strong>Your response:</strong> ' + (step.user_response || 'No response') + '</p>';
                         stepsHtml += '</div>';
                     });
+
+                    
                     $('#flowSteps').html(stepsHtml);
                     modal.style.display = "block";
                 }
@@ -90,25 +96,53 @@
 </script>
 
 <style>
-    /* DataTable Styling */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-title {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+    }
+
     #user-responses {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
     }
 
     #user-responses th, #user-responses td {
-        padding: 12px;
+        padding: 15px;
         text-align: left;
-        border-bottom: 1px solid #ddd;
     }
 
     #user-responses thead {
-        background-color: #f2f2f2;
+        background-color: #0250c4; /* Changed to #0250c4 */
+        color: white;
     }
 
-    /* Review Button Styling */
+    #user-responses thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    #user-responses tbody tr:nth-child(even) {
+        background-color: #f8f8f8;
+    }
+
+    #user-responses tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
     .review-flow-btn {
-        background-color: #4CAF50;
+        background-color: #0250c4; /* Changed to #0250c4 */
         border: none;
         color: white;
         padding: 10px 20px;
@@ -119,35 +153,35 @@
         margin: 4px 2px;
         cursor: pointer;
         border-radius: 4px;
-        transition: background-color 0.3s;
+        transition: background-color 0.3s, transform 0.2s;
     }
 
     .review-flow-btn:hover {
-        background-color: #45a049;
+        background-color: #02419d; /* Darker shade for hover */
+        transform: translateY(-2px);
     }
 
-    /* Modal Styling */
     .modal {
         display: none;
         position: fixed;
-        z-index: 1;
+        z-index: 1000;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0,0,0,0.4);
+        background-color: rgba(0,0,0,0.6);
     }
 
     .modal-content {
         background-color: #fefefe;
         margin: 5% auto;
-        padding: 20px;
+        padding: 30px;
         border: 1px solid #888;
         width: 80%;
-        max-width: 600px;
-        border-radius: 5px;
-        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        max-width: 700px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
     .close {
@@ -155,30 +189,49 @@
         float: right;
         font-size: 28px;
         font-weight: bold;
+        transition: color 0.3s;
     }
 
     .close:hover,
     .close:focus {
-        color: black;
+        color: #333;
         text-decoration: none;
         cursor: pointer;
     }
 
     .step {
-        margin-bottom: 20px;
-        padding: 15px;
+        margin-bottom: 25px;
+        padding: 20px;
         background-color: #f9f9f9;
-        border-radius: 5px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .step h3 {
         margin-top: 0;
-        color: #333;
+        color: #0250c4; /* Changed to #0250c4 */
+        font-size: 18px;
     }
 
     #modalFlowName {
-        color: #4CAF50;
+        color: #0250c4; /* Changed to #0250c4 */
         text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #0250c4; /* Changed to #0250c4 */
+        padding-bottom: 10px;
+    }
+
+    /* Responsive adjustments */
+    @media screen and (max-width: 768px) {
+        .modal-content {
+            width: 95%;
+            padding: 20px;
+        }
+
+        #user-responses th, #user-responses td {
+            padding: 10px;
+        }
     }
 </style>
 {% endblock %}

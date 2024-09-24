@@ -244,7 +244,8 @@ def create_flow(request):
         steps = data.get('steps', [])
         # Create Flow
         flow = Flow.objects.create(name=flow_name, description=flow_description)
-
+        
+        print(data)
         # Create FlowSteps and store them in a dictionary for later reference
         step_map = {}
         for step_data in steps:
@@ -302,7 +303,6 @@ def flow_view(request):
 
 
 @login_required
-
 def edit_flow(request, flow_id):
     flow = get_object_or_404(Flow, id=flow_id)
     steps = FlowStep.objects.filter(flow=flow).prefetch_related('options')
@@ -324,6 +324,7 @@ def update_flow(request, flow_id):
         # Update steps and options
         for step_data in data['steps']:
             step = FlowStep.objects.get(id=step_data['id'])
+            print(step.text)
             step.text = step_data['text']
             step.is_final_step = step_data['is_final_step']
             step.save()
@@ -410,7 +411,9 @@ def upload_excel(request):
             'flow_description': df['Flow Description'].iloc[0],
             'steps': []
         }
-
+        # if x==1:
+        #     return JsonResponse({'error': 'Invalid request'}, status=400)
+            
         steps = df[['Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']]
         grouped = steps.groupby('Step Number')
 
@@ -421,15 +424,12 @@ def upload_excel(request):
                 'is_final_step': bool(group['Is Final Step'].iloc[0]),
                 'options': []
             }
-            # print(step["is_final_step"])
             for _, row in group.iterrows():
                 step['options'].append({
                     'text': row['Option Text'],
                     'next_step': row['Next Step Number']
                 })
-                # print(step['options'])
             data['steps'].append(step)
-        # print(data)
         return JsonResponse(data)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -439,8 +439,11 @@ def run_flow(request, flow_id):
     flow = get_object_or_404(Flow, id=flow_id)
     first_step = FlowStep.objects.filter(flow=flow).order_by('step_number').first()
 
-    if not first_step:
-        return render(request, 'ChabotFeature/error.html', {'message': 'No steps found for this flow'})
+
+    # Generate a unique session ID and store it in the session
+    session_id = str(uuid.uuid4())  # Generate unique session ID
+    request.session['session_id'] = session_id
+
 
     # Pass the initial step to the template
     return render(request, 'ChabotFeature/run_flow.html', {
@@ -474,7 +477,6 @@ def respond(request, step_id, option_id):
                 'text': 'Thank you for completing the flow!',
                 'options': []
             }
-
         return JsonResponse(response_data)
 
     except FlowStep.DoesNotExist or FlowOption.DoesNotExist:
@@ -543,7 +545,6 @@ def user_responses(request):
         .annotate(first_response_date=Min('response_date'))  # Get the earliest response per session
         .order_by('first_response_date')
     )
-    print(unique_sessions)
     # Fetch the corresponding flow and step data
     responses = []
     for session in unique_sessions:

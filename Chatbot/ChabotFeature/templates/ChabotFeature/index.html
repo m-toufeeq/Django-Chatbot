@@ -3,19 +3,17 @@
 {% block title %}Chatbot Dashboard{% endblock %}
 
 {% block content %}
+
 <div class="container mt-5">
 
-    <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Logout</button>
-    </form>
-    
     <div class="card mt-4">
-        <div class="card-header">
-            Chat Interface
+        <div class="card-header"style="font-size: 2.5rem;">
+            <strong>
+                Chat Interface
+            </strong>
         </div>
         <div class="card-body">
-            <div id="chat-window" class="border p-3" style="height: 250px; overflow-y: auto;">
+            <div id="chat-window" class="border p-3" style="height: 500px; overflow-y: auto;">
                 <!-- Chat messages will be appended here -->
             </div>
             <div id="chat-input" class="mt-3">
@@ -128,19 +126,29 @@
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'button-container';
 
-            // Add Skip button
+            // Create Skip button and set it to green
             const skipButton = document.createElement('button');
             skipButton.innerText = 'Skip';
             skipButton.className = 'chat-option';
+            skipButton.style.backgroundColor = 'green';  // Set background color to green
+            skipButton.style.color = 'white';  // Set text color to white for better contrast
+            skipButton.style.width = '100px';  // Set width to ensure both buttons are the same size
+            skipButton.style.padding = '10px'; // Optional: Set padding for better appearance
             skipButton.onclick = () => skipStep(step.step_id);
             buttonContainer.appendChild(skipButton);
 
-            // Add Exit button
+            // Add Exit button and set it to red
             const exitButton = document.createElement('button');
             exitButton.innerText = 'Exit';
             exitButton.className = 'chat-option';
+            exitButton.style.backgroundColor = 'red';  // Set background color to red
+            exitButton.style.color = 'white';  // Set text color to white for better contrast
+            exitButton.style.width = '100px';  // Set width to ensure both buttons are the same size
+            exitButton.style.padding = '10px'; // Optional: Set padding for better appearance
             exitButton.onclick = exitFlow;
             buttonContainer.appendChild(exitButton);
+
+;
 
             // Append the button container to the chat window
             chatWindow.appendChild(buttonContainer);
@@ -157,7 +165,9 @@
                 if (data.error) {
                     console.error('Error:', data.error);
                 } else {
-                    renderChatStep(data);  // Render the next chat step
+                    console.log(data); 
+                    renderChatStep(data);
+                      // Render the next chat step
                 }
             })
             .catch(error => console.error('Error:', error));

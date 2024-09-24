@@ -128,7 +128,7 @@
                 <div class="card-body">
                     <div class="form-group">
                         <label for="stepText${stepCount}">Step Text</label>
-                        <input type="text" class="form-control" id="stepText${stepCount}" name="steps[${stepIndex}][text]" required>
+                        <text type="text" class="form-control" id="stepText${stepCount}" name="steps[${stepIndex}][text]" required>
                     </div>
                     <div class="form-group">
                         <label for="isFinalStep${stepCount}">Is Final Step</label>
@@ -213,7 +213,6 @@
 
     $('#createFlowForm').on('submit', function(e) {
         e.preventDefault();
-    
         let formData = {
             name: $('#flowName').val(),
             description: $('#flowDescription').val(),
@@ -312,10 +311,30 @@
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="nextStep${index + 1}_${optionIndex + 1}">Next Step</label>
-                                                        <select class="form-control" id="nextStep${index + 1}_${optionIndex + 1}" name="steps[${index}][options][${optionIndex}][next_step]" required>
-                                                            ${response.steps.filter((_, i) => i !== index).map((_, stepIndex) => `
-                                                                <option value="${stepIndex + 1}" ${option.next_step_number == stepIndex + 1 ? 'selected' : ''}>Step ${stepIndex + 1}</option>
-                                                            `).join('')}
+                                                        
+                                                         <select class="form-control" id="nextStep${index + 1}_${optionIndex + 1}" name="steps[${index}][options][${optionIndex}][next_step]"
+
+                                                            ${(() => {
+                                                                let optionsHTML = ' required>'; 
+                                                                if(step.is_final_step){
+                                                                    optionsHTML=' disabled>'
+                                                                }else{
+                                                                    response.steps.forEach((_, i) => {
+                                                                    
+                                                                            if (i !== index) {  
+                                                                                optionsHTML += `
+                                                                                    <option value="${i + 1}" ${option.next_step == i + 1 ? 'selected' : ''}>Step ${i + 1}</option>
+                                                                                `;
+                                                                            }
+
+                                                                            
+                                                                        
+                                                                        
+                                                                    });
+                                                                }
+                                                                return optionsHTML; 
+                                                            })()}
+
                                                         </select>
                                                     </div>
                                                     <button type="button" class="btn btn-danger delete-option-btn mt-3">Delete Option</button>
@@ -331,7 +350,7 @@
                     });
     
                     $('#formContent').removeClass('hidden'); // Show form content
-                    updateNextStepOptions();
+                    // updateNextStepOptions();
                 },
                 error: function() {
                     toastr.error('An error occurred while uploading the file.');
