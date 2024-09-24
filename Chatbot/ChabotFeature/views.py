@@ -398,28 +398,64 @@ def download_template(request):
             return response
     else:
         return HttpResponse("File not found.", status=404)
-print()
 @csrf_exempt
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('file'):
         file = request.FILES['file']
         df = pd.read_excel(file)
+
+        # Validate the columns
+        required_columns = ['Flow Name', 'Flow Description', 'Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']
+        if not all(col in df.columns for col in required_columns):
+            return JsonResponse({'error': 'Invalid columns in the uploaded file. Compare your columns with the template!'}, status=400)
+
+        def is_valid_step_number(value):
+            if isinstance(value, str) and value == '-':
+                return True
+            try:
+                int(value)
+                return True
+            except (ValueError, TypeError):
+                return False
+
+        if not df['Step Number'].apply(is_valid_step_number).all():
+            return JsonResponse({'error': 'The column "Step Number" must contain integers or "-".'}, status=400)
+        if not df['Next Step Number'].apply(is_valid_step_number).all():
+            return JsonResponse({'error': 'The column "Next Step Number" must contain integers or "-".'}, status=400)
+        
+        def normalize_boolean(value):
+            value = str(value)
+            if isinstance(value, str):
+                if value.strip().lower() in ['true', 't', 'yes', '1']:
+                    return True
+                elif value.strip().lower() in ['false', 'f', 'no', '0']:
+                    return False
+            return None
+
+
+        normalized_is_final_step = df['Is Final Step'].apply(normalize_boolean)
+
+        # Check for any invalid boolean entries
+        if normalized_is_final_step.isnull().any():
+            return JsonResponse({'error': 'The column "Is Final Step" must contain boolean values (true/false/0/1/yes/no).'}, status=400)
+
+        # Replace the original 'Is Final Step' column with normalized values
+        df['Is Final Step'] = normalized_is_final_step
+
         # Extract data
         data = {
             'flow_name': df['Flow Name'].iloc[0],
             'flow_description': df['Flow Description'].iloc[0],
             'steps': []
         }
-        print(df)
-            
+
         steps = df[['Step Number', 'Step Text', 'Is Final Step', 'Option Text', 'Next Step Number']]
         grouped = steps.groupby('Step Number')
 
         for step_number, group in grouped:
-            
             step = {
                 'text': group['Step Text'].iloc[0],
-                'is_final_step': bool(group['Is Final Step'].iloc[0]),
+                'is_final_step': bool(group['Is Final Step'].iloc[0]),  # This is now guaranteed to be True/False
                 'options': []
             }
             for _, row in group.iterrows():
@@ -428,6 +464,7 @@ def upload_excel(request):
                     'next_step': row['Next Step Number']
                 })
             data['steps'].append(step)
+
         return JsonResponse(data)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
