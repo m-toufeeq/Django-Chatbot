@@ -398,7 +398,7 @@ def download_template(request):
             return response
     else:
         return HttpResponse("File not found.", status=404)
-
+print()
 @csrf_exempt
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('file'):
