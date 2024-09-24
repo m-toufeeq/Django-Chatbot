@@ -354,8 +354,12 @@
                     $('#formContent').removeClass('hidden'); // Show form content
                     // updateNextStepOptions();
                 },
-                error: function() {
-                    toastr.error('An error occurred while uploading the file.');
+                error: function(response) {
+                    var errorMessage = 'An error occurred while saving the flow.';
+                    if (response.responseJSON && response.responseJSON.error) {
+                        errorMessage = response.responseJSON.error; // Get the specific error message from the response
+                    }
+                    toastr.error(errorMessage); // Display the error message
                 }
             });
         }
