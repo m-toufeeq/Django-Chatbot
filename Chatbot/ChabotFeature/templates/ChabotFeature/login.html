@@ -32,11 +32,7 @@
             position: relative;
             overflow: hidden; /* Ensure no overflow */
         }
-        .login-background img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Ensures the image covers the container */
-        }
+     
         .login-form-wrapper {
             flex: 0 0 400px;
             display: flex;
@@ -128,13 +124,13 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="login-background">
-            <img src="{%static "images/chatbotimage.jpg"%}">
+        <div class="login-background" style="background-color: skyblue;">
+            <img src="https://www.ometrics.com/blog/wp-content/uploads/2021/02/What-is-a-chatbot-1.png">
         </div>
         <div class="login-form-wrapper">
             <div class="login-form-container">
-                <div class="login-background">
-                    <img src="{% static 'images/techsasoft-logo-1.png' %}" alt="Background Image">
+                <div class="navbar-logo-container">
+                    <img src="{% static 'images/techsasoft-logo-1.png' %}" class="navbar-logo" alt="Background Image">
                 </div>
                 <h2 class="login-title">Welcome Back</h2>
                 <p class="login-subtitle">Please enter your details to sign in</p>

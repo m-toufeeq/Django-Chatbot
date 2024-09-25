@@ -3,81 +3,11 @@
 {% block title %}Home Page{% endblock %}
 {% load static %}
 {% block extra_css %}
-<style>
-    /* Apply snap scroll to the container */
-    html, body {
-        margin: 0;
-        height: 100%;
-        scroll-snap-type: y mandatory;
-        overflow-y: scroll;
-    }
 
-    /* Make the navbar fixed at the top */
-    .navbar-custom {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 9999; /* Ensure it's above other content */
-    }
-
-    /* Ensure sections fit the full viewport */
-    .section {
-        position: relative;
-        height: 100vh; /* Full viewport height */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        scroll-snap-align: start;
-        overflow: hidden;
-    }
-
-    /* Placeholder image styles */
-    .section img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0.5; /* Make the image translucent */
-    }
-
-    /* Button style */
-    .section .btn {
-        position: relative;
-        z-index: 1; /* Ensure button stays above the image */
-        padding: 15px 30px;
-        background-color: transparent;
-        border: 2px solid black;
-        color: black;
-        font-size: 1.2rem;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        border-radius: 25px; /* Makes the corners rounded */
-    }
-
-    /* Hover effect for button */
-    .section .btn:hover {
-        background-color: rgba(255, 255, 255, 3); /* Slight translucent effect on hover */
-    }
-
-    /* Offset the body content to avoid it being hidden under the navbar */
-    body {
-        margin-top: 70px;
-    }
-
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="section section1">
-    <img src="{% static "images/snapscroll1.jpg" %}" alt="Placeholder Image">
-    <a class="btn" href="{% url 'upload_flow' %}">Upload your flow</a>
-</div>
-<div class="section section2">
-    <img src="{% static "images/snapscroll2.jpg" %}" alt="Placeholder Image">
-    <a class="btn" href="{% url 'flowview' %}">See All Flows</a>
-</div>
+
 
 
 {% endblock %}
