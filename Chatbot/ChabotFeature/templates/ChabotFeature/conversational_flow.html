@@ -1,0 +1,60 @@
+{% extends 'base_Conversational.html' %}
+{% block title %}View Flows{% endblock %}
+{% block content %}
+<style>
+    #chat-window {
+        width: 400px;
+        height: 500px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        overflow-y: scroll;
+        margin-bottom: 10px;
+    }
+
+    .user-message, .bot-message {
+        padding: 8px;
+        margin: 5px 0;
+    }
+
+    .user-message {
+        background-color: #f1f1f1;
+        text-align: right;
+    }
+
+    .bot-message {
+        background-color: #d4edda;
+    }
+</style>
+
+<div id="chat-window"></div>
+
+<input type="text" id="user-input" placeholder="Type your message here..." style="width: 80%;">
+<button id="send-btn">Send</button>
+
+<script>
+    $(document).ready(function() {
+        $("#send-btn").click(function() {
+            var message = $("#user-input").val();
+            if (message) {
+                // Append user's message to the chat window
+                $("#chat-window").append('<div class="user-message">' + message + '</div>');
+
+                // Clear the input field
+                $("#user-input").val('');
+
+                // Make an AJAX request to get chatbot response
+                $.ajax({
+                    url: "{% url 'get_chatbot_response' %}",
+                    data: {
+                        'message': message
+                    },
+                    success: function(response) {
+                        // Append chatbot response to the chat window
+                        $("#chat-window").append('<div class="bot-message">' + response.response + '</div>');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

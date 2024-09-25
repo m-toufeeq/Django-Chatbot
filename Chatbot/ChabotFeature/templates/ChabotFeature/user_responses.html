@@ -1,106 +1,12 @@
-{% extends 'base.html' %}
+{% extends 'base_menuChatbot.html' %}
+
 
 {% block content %}
-<div class="container">
-    <h1 class="page-title">Your Responses</h1>
 
-    <table id="user-responses" class="display">
-        <thead>
-            <tr>
-                <th>Session ID</th>
-                <th>Flow Name</th>
-                <th>Date and Time Created</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for response in responses %}
-            <tr>
-                <td>{{ response.session_id }}</td>
-                <td>{{ response.step.flow.name }}</td>
-                <td>{{ response.response_date|date:"Y-m-d H:i" }}</td>
-                <td>
-                    <button class="review-flow-btn" data-flow-id="{{ response.step.flow.id }}" data-session-id="{{ response.session_id }}">Review Flow</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
 
-<!-- Modal for Flow Review -->
-<div id="flowReviewModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modalFlowName"></h2>
-        <div id="flowSteps"></div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#user-responses').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            "responsive": true
-        });
-
-        var modal = document.getElementById("flowReviewModal");
-        var span = document.getElementsByClassName("close")[0];
-
-        $('.review-flow-btn').on('click', function() {
-            var flowId = $(this).data('flow-id');
-            var sessionId = $(this).data('session-id');
-            var flowName = $(this).closest('tr').find('td:nth-child(2)').text();
-            
-            $('#modalFlowName').text(flowName);
-            
-            $.ajax({
-                url: '{% url "get_flow_steps" %}',
-                data: {
-                    'flow_id': flowId,
-                    'session_id': sessionId
-                },
-                dataType: 'json',
-                success: function(data) {
-                    var stepsHtml = '';
-                    data.steps.forEach(function(step, index) {
-                        stepsHtml += '<div class="step">';
-                        stepsHtml += '<h3>Question ' + (index + 1) + ': ' + step.text + '</h3>';
-                        stepsHtml += '<p><strong>Your response:</strong> ' + (step.user_response || 'No response') + '</p>';
-                        stepsHtml += '</div>';
-                    });
-
-                    
-                    $('#flowSteps').html(stepsHtml);
-                    modal.style.display = "block";
-                }
-            });
-        });
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    });
-</script>
 
 <style>
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
+    
     .page-title {
         text-align: center;
         color: #333;
@@ -116,15 +22,8 @@
         overflow: hidden;
     }
 
-    #user-responses th, #user-responses td {
-        padding: 15px;
-        text-align: left;
-    }
+   
 
-    #user-responses thead {
-        background-color: #0250c4; /* Changed to #0250c4 */
-        color: white;
-    }
 
     #user-responses thead th {
         font-weight: 600;
@@ -233,4 +132,105 @@
         }
     }
 </style>
+
+<div class="container p-2 card my-5 my-5">
+    <h2 class="page-title">Your Responses</h2>
+
+    <table id="user-responses" class="display pt-3">
+        <thead>
+            <tr>
+                <!-- <th>Session ID</th> -->
+                <th>Flow Name</th>
+                <th>Date and Time Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for response in responses %}
+            <tr>
+                <!-- <td>{{ response.session_id }}</td> -->
+                <td>{{ response.step.flow.name }}</td>
+                <td>{{ response.response_date|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <button class="review-flow-btn" data-flow-id="{{ response.step.flow.id }}" data-session-id="{{ response.session_id }}">Review Flow</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal for Flow Review -->
+<div id="flowReviewModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalFlowName"></h2>
+        <div id="flowSteps"></div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+<script>
+    $(document).ready(function() {
+        $('#user-responses').DataTable({
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "responsive": true
+        });
+
+        var modal = document.getElementById("flowReviewModal");
+        var span = document.getElementsByClassName("close")[0];
+
+        $('.review-flow-btn').on('click', function() {
+            var flowId = $(this).data('flow-id');
+            var sessionId = $(this).data('session-id');
+            var flowName = $(this).closest('tr').find('td:nth-child(2)').text();
+            
+            $('#modalFlowName').text(flowName);
+            
+            $.ajax({
+                url: '{% url "get_flow_steps" %}',
+                data: {
+                    'flow_id': flowId,
+                    'session_id': sessionId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    var stepsHtml = '';
+                    data.steps.forEach(function(step, index) {
+                        stepsHtml += '<div class="step">';
+                        stepsHtml += '<h3>Question ' + (index + 1) + ': ' + step.text + '</h3>';
+                        stepsHtml += '<p><strong>Your response:</strong> ' + (step.user_response || 'No response') + '</p>';
+                        stepsHtml += '</div>';
+                    });
+
+                    
+                    $('#flowSteps').html(stepsHtml);
+                    modal.style.display = "block";
+                }
+            });
+        });
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    });
+</script>
+
 {% endblock %}
+
+
+

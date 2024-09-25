@@ -15,6 +15,17 @@ import pandas as pd
 import uuid
 from django.db.models import Min
 from django.db.models import Count
+
+import random
+import json
+import pickle
+import numpy as np
+import nltk
+
+from nltk.stem import WordNetLemmatizer
+from keras.models import load_model
+
+
 def flow_buttons(request):
     flows = Flow.objects.all()
     buttons = [{'id': flow.id, 'text': flow.name} for flow in flows]  
@@ -56,7 +67,81 @@ def index(request):
     flow = Flow.objects.all()
     return redirect('dashboard')
 
-    
+
+
+
+#-----------------------------
+# Conversational Chatbot Code start from here
+#-----------------------------
+
+
+
+# Load model and data
+lemmatizer = WordNetLemmatizer()
+intents = json.loads(open('ChabotFeature/static/gynae/intents_gynae.json').read())
+words = pickle.load(open('ChabotFeature/static/gynae/words.pkl', 'rb'))
+classes = pickle.load(open('ChabotFeature/static/gynae/classes.pkl', 'rb'))
+model = load_model('ChabotFeature/static/gynae/gynae_chatbot_model.h5')
+
+
+def clean_up_sentence(sentence):
+    sentence_words = nltk.word_tokenize(sentence)
+    sentence_words = [lemmatizer.lemmatize(word) for word in sentence_words]
+    return sentence_words
+
+
+def bag_of_words(sentence):
+    sentence_words = clean_up_sentence(sentence)
+    bag = [0] * len(words)
+    for w in sentence_words:
+        for i, word in enumerate(words):
+            if word == w:
+                bag[i] = 1
+    return np.array(bag)
+
+
+def predict_class(sentence):
+    bow = bag_of_words(sentence)
+    res = model.predict(np.array([bow]))[0]
+    ERROR_THRESHOLD = 0.25
+    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
+
+    results.sort(key=lambda x: x[1], reverse=True)
+    return_list = []
+    for r in results:
+        return_list.append({'intent': classes[r[0]], 'probability': str(r[1])})
+    return return_list
+
+
+def get_response(intents_list, intents_json):
+    tag = intents_list[0]['intent']
+    list_of_intents = intents_json['intents']
+    result = "Oops, I don't understand you! Try using different words."
+    for i in list_of_intents:
+        if i['tag'] == tag:
+            result = random.choice(i['responses'])
+            break
+    return result
+
+
+# View for rendering chatbot page
+def Converstational_flowview(request):
+    return render(request, 'ChabotFeature/conversational_flow.html')
+
+
+# View to handle AJAX requests
+def get_chatbot_response(request):
+    message = request.GET.get('message')
+    ints = predict_class(message)
+    res = get_response(ints, intents)
+    return JsonResponse({'response': res})
+
+
+
+#-----------------------------------
+# Conversational Chat ends here
+#-----------------------------------
+
 @login_required
 def flowview(request):
     if request.method == 'POST':

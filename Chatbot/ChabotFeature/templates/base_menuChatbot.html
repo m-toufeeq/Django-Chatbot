@@ -104,10 +104,16 @@
                     <a class="nav-link" href="{% url 'index' %}">Chatbots</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'flowview' %}">Menu Chatbot</a>
+                    <a class="nav-link" href="{% url 'flowview' %}">Flow Record</a>
                 </li>
-                <li class="nav-item"></li>
-                    <a class="nav-link" href="{% url 'Converstational_flowview' %}">Conversational Chatbot</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'flowcreate' %}">Flow Create</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'upload_flow' %}">Upload a Flow</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_responses' %}">User's responses</a>
                 </li>
                 <li class="nav-item">
                     <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">

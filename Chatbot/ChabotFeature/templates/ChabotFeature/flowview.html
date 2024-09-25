@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_menuChatbot.html' %}
 {% block title %}View Flows{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
@@ -10,7 +10,7 @@
         </strong>
         </div>
         <div class="card-body">
-            <table id="flowsTable" class="table table-striped">
+            <table id="flowsTable" class="display mt-3">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -38,4 +38,12 @@
         </div>
     </div>
 </div>
+
+<script>
+    $('#flowsTable').DataTable({
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "responsive": true
+        });
+</script>
 {% endblock %}

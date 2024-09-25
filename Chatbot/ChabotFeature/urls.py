@@ -17,6 +17,8 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),  # in use #url
 
     path('flowview/', flowview, name='flowview'),  # in use
+    path('Converstational_flowview/', Converstational_flowview, name='Converstational_flowview'),
+    path('get_chatbot_response/', get_chatbot_response, name='get_chatbot_response'),
 
     path('flowcreate/', flowcreate, name='flowcreate'),  # working #url
     path('create-flow/', create_flow, name='create_flow'),

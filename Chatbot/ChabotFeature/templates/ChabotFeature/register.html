@@ -27,6 +27,18 @@
             justify-content: center;
             position: relative;
         }
+
+      
+        .signup-background {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden; /* Ensure no overflow */
+        }
+        
+
         .signup-form-wrapper {
             flex: 0 0 400px;
             display: flex;
@@ -118,8 +130,8 @@
 </head>
 <body>
     <div class="signup-container">
-        <div class="signup-background">
-            <img src="{% static 'images/techsasoft-logo-1.png' %}" alt="Background Image">
+        <div class="signup-background" style="background-color: skyblue;">
+            <img src="https://www.ometrics.com/blog/wp-content/uploads/2021/02/What-is-a-chatbot-1.png">
         </div>
         <div class="signup-form-wrapper">
             <div class="signup-form-container">
