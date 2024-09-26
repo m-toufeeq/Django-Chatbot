@@ -20,7 +20,9 @@
         "Hi there! How can I help you with your health concerns?",
         "Greetings! What can I assist you with today?"
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "goodbye",
@@ -40,7 +42,9 @@
         "See you! Stay healthy.",
         "Bye! Feel free to reach out anytime."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "thanks",
@@ -58,7 +62,9 @@
         "You're welcome! I'm happy to assist.",
         "Glad to help! Let me know if you need more information."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "menstrual_health_general",
@@ -78,7 +84,9 @@
         "A typical menstrual cycle ranges from 21 to 35 days. Factors like stress or hormonal changes can delay or affect your cycle.",
         "Irregular periods could be due to factors like PCOS, stress, or other health issues. It's best to consult a doctor if the irregularity continues."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "heavy_bleeding",
@@ -96,7 +104,9 @@
         "Heavy bleeding could be a sign of fibroids or hormonal imbalances. Consult a doctor if it persists.",
         "Frequent heavy bleeding can sometimes indicate a medical condition. It's best to visit a gynecologist to assess the issue."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "light_bleeding",
@@ -113,7 +123,9 @@
       "responses": [
         "Light periods could be due to stress, changes in birth control, or hormonal factors. If you're concerned, it's a good idea to talk to your doctor."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "menopause_inquiry",
@@ -128,7 +140,9 @@
       "responses": [
         "Common signs of menopause include hot flashes, irregular periods, mood swings, and sleep issues. It's a normal transition in life."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "pregnancy_inquiry",
@@ -145,7 +159,9 @@
         "Common early signs of pregnancy include missed periods, nausea, breast tenderness, and fatigue. A home pregnancy test can provide initial confirmation.",
         "If you think you're pregnant, taking a test after a missed period is the best way to find out."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "prenatal_care",
@@ -161,7 +177,9 @@
         "Prenatal care is important for monitoring the health of you and your baby. Regular checkups, eating a balanced diet, and avoiding harmful substances are crucial.",
         "Taking care during pregnancy includes eating nutritious food, staying active, and avoiding alcohol and smoking."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "contraception_options",
@@ -177,7 +195,9 @@
       "responses": [
         "There are various contraception methods like birth control pills, IUDs, and condoms. You should talk to a doctor to decide which method is best for you."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "fertility_concerns",
@@ -193,7 +213,9 @@
       "responses": [
         "Many factors can affect fertility, including age, hormonal imbalances, or underlying health conditions. It's best to consult a fertility specialist for advice."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "ovulation_info",
@@ -208,7 +230,9 @@
       "responses": [
         "Ovulation typically occurs midway through the menstrual cycle, around day 14 of a 28-day cycle. Signs of ovulation can include mild cramping, increased cervical mucus, and changes in body temperature."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "emergency_inquiry",
@@ -226,7 +250,9 @@
         "If you're experiencing severe pain or heavy bleeding, seek immediate medical attention.",
         "Serious symptoms like heavy bleeding or severe pain could require urgent care. Please visit an emergency room."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "followup_pregnancy",
@@ -237,10 +263,14 @@
         "Pregnancy followup",
         "What happens next in my pregnancy?",
         "When do I need to schedule a prenatal appointment?"
-      ],"responses": ["Yes, if you're pregnant, it's important to schedule your first prenatal appointment as soon as possible. Regular follow-ups will ensure both your health and the baby's development.",
+      ],
+      "responses": [
+        "Yes, if you're pregnant, it's important to schedule your first prenatal appointment as soon as possible. Regular follow-ups will ensure both your health and the baby's development.",
         "Consulting a doctor for prenatal care is essential. They'll guide you through the necessary steps for a healthy pregnancy."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "symptom_check",
@@ -257,7 +287,9 @@
         "Dizziness and fatigue can be symptoms of various conditions. It's best to monitor your symptoms and consult a healthcare professional if they persist.",
         "Nausea can be a normal part of many conditions, including pregnancy. However, if you're concerned, it's advisable to seek medical advice."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "health_tips",
@@ -274,7 +306,9 @@
         "Eating a balanced diet, staying hydrated, exercising regularly, and managing stress are all key to a healthy lifestyle. Consider consulting a nutritionist for personalized advice.",
         "Incorporating fruits, vegetables, whole grains, and lean proteins into your diet can greatly improve your health. Regular check-ups are also essential."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     },
     {
       "tag": "emotional_health",
@@ -291,7 +325,9 @@
         "Managing stress can involve regular exercise, mindfulness practices, and talking to someone you trust. If anxiety persists, consider seeking professional help.",
         "It's important to prioritize your mental health. Activities like meditation, yoga, or talking to a therapist can be beneficial."
       ],
-      "context": [""]
+      "context": [
+        ""
+      ]
     }
   ]
 }

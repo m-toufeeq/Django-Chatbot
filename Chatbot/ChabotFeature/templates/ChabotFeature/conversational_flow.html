@@ -1,58 +1,138 @@
 {% extends 'base_Conversational.html' %}
 {% block title %}View Flows{% endblock %}
 {% block content %}
+
 <style>
+    #chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 400px; /* Set a fixed height */
+    }
     #chat-window {
-        width: 400px;
-        height: 500px;
-        border: 1px solid #ccc;
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #f0f0f0;
+    }
+    #input-container {
+        display: flex;
         padding: 10px;
-        overflow-y: scroll;
-        margin-bottom: 10px;
+        background-color: #fff;
+        border-top: 1px solid #ccc;
     }
-
-    .user-message, .bot-message {
-        padding: 8px;
+    .message {
+        max-width: 70%;
+        padding: 10px;
         margin: 5px 0;
+        border-radius: 20px;
+        position: relative;
+        clear: both;
     }
-
     .user-message {
-        background-color: #f1f1f1;
-        text-align: right;
+        background-color: #DCF8C6;
+        float: right;
     }
-
     .bot-message {
-        background-color: #d4edda;
+        background-color: #E8E8E8;
+        float: left;
     }
-</style>
-
-<div id="chat-window"></div>
-
-<input type="text" id="user-input" placeholder="Type your message here..." style="width: 80%;">
-<button id="send-btn">Send</button>
+    .message::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: 0;
+        height: 0;
+        border: 15px solid transparent;
+    }
+    .user-message::after {
+        right: -15px;
+        border-left-color: #DCF8C6;
+        border-right: 0;
+    }
+    .bot-message::after {
+        left: -15px;
+        border-right-color: #E8E8E8;
+        border-left: 0;
+    }
+    .timestamp {
+        font-size: 0.7em;
+        color: #888;
+        margin-top: 5px;
+    }
+    #user-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        margin-right: 10px;
+    }
+    #send-btn {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+</style>                          
+<div class="container mt-5" style="max-width: 1200px;">
+    <h1 class="text-center">iPregli Conversational Chatbot</h1>
+    
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row d-flex align-items-center justify-content-center">
+                        <div class="col-6">
+                            <div id="chat-container">
+                                <div id="chat-window"></div>
+                                <div id="input-container">
+                                    <input type="text" id="user-input" placeholder="Type your message here...">
+                                    <button id="send-btn">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6" style="background-color: #f8f9fa;">
+                            <div class="placeholder bg-light" style="width: 100%; height: 100%; position: relative;">
+                                <img src="https://cdn.dribbble.com/users/6985884/screenshots/15849023/media/6dfb9f3caf75d8b6acc1f9bde6b885fa.gif" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 <script>
     $(document).ready(function() {
-        $("#send-btn").click(function() {
+        function sendMessage() {
             var message = $("#user-input").val();
             if (message) {
-                // Append user's message to the chat window
-                $("#chat-window").append('<div class="user-message">' + message + '</div>');
-
-                // Clear the input field
+                var timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                $("#chat-window").append('<div class="message user-message">' + message + '<div class="timestamp">' + timestamp + '</div></div>');
                 $("#user-input").val('');
-
-                // Make an AJAX request to get chatbot response
                 $.ajax({
-                    url: "{% url 'get_chatbot_response' %}",
+                    url: "{% url 'get_chatbot_response' %}",    
                     data: {
                         'message': message
                     },
                     success: function(response) {
-                        // Append chatbot response to the chat window
-                        $("#chat-window").append('<div class="bot-message">' + response.response + '</div>');
+                        var botTimestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        $("#chat-window").append('<div class="message bot-message">' + response.response + '<div class="timestamp">' + botTimestamp + '</div></div>');
+                        $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
                     }
                 });
+            }
+        }
+
+        $("#send-btn").click(sendMessage);
+
+        $("#user-input").keypress(function(e) {
+            if(e.which == 13) {
+                sendMessage();
+                return false;
             }
         });
     });

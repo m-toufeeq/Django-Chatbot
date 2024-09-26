@@ -141,6 +141,7 @@
                 <h2 class="signup-title">Create Account</h2>
                 <p class="signup-subtitle">Fill in your details to get started</p>
                 <form id="signupForm" method="post">
+                    {% csrf_token %}
                     <div class="form-group">
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">
@@ -161,7 +162,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" class="form-control" id="password1" name="password1" required>
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword1">
+                            <button type="button" class="btn btn-outline-secondary input-group-text" id="togglePassword1">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -172,7 +173,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
                             <input type="password" class="form-control" id="password2" name="password2" required>
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword2">
+                            <button type="button" class="btn btn-outline-secondary input-group-text" id="togglePassword2">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -181,33 +182,11 @@
                     <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
                 </form>
                 <p class="signup-footer">
-                    Already have an account? <a href="{%url "login"%}">Login here</a>
+                    Already have an account? <a href="{% url 'login' %}">Login here</a>
                 </p>
             </div>
         </div>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            $('#togglePassword1, #togglePassword2').on('click', function() {
-                let $passwordField = $(this).prev('input');
-                let type = $passwordField.attr('type') === 'password' ? 'text' : 'password';
-                $passwordField.attr('type', type);
-                $(this).find('i').toggleClass('fa-eye fa-eye-slash');
-            });
-
-            $('#signupForm').on('submit', function(e) {
-                e.preventDefault();
-                // Simulated signup process
-                setTimeout(function() {
-                    toastr.success('Signup successful! Redirecting...');
-                    setTimeout(function() {
-                        window.location.href = '/dashboard/';
-                    }, 1000);
-                }, 1000);
-            });
-        });
-    </script>
 </body>
 
 <script>
@@ -233,10 +212,10 @@
                 },
                 error: function(response) {
                     toastr.error('There were errors in your form. Please check.');
+                    console.log(response)
                 }
             });
         });
     });
 </script>
-{% endblock %}
-d
+{% endblock %}
