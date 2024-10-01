@@ -1,65 +1,62 @@
-Django Chatbot Application
-Overview
+# Django Chatbot Application Overview
 
 This is a Django-based chatbot application that enables users to create and interact with chatbot flows. It supports creating custom flows with dynamic questions and options, recording user responses, and managing different chatbot types such as rule-based, AI-powered, and more.
-Key Features
 
-    Flow Creation: Create chatbot flows with steps, questions, and options.
-    Dynamic Navigation: Navigate between steps based on user choices.
-    User Response Logging: Store user responses for future analysis.
-    Excel Upload: Import flow details via Excel.
-    Multi-Flow Support: Manage multiple chatbot flows simultaneously.
-    DataTable Interface: Display user responses with search, filter, and modal preview options.
+## Key Features
 
-Table of Contents
+- **Flow Creation**: Create chatbot flows with steps, questions, and options.
+- **Dynamic Navigation**: Navigate between steps based on user choices.
+- **User Response Logging**: Store user responses for future analysis.
+- **Excel Upload**: Import flow details via Excel.
+- **Multi-Flow Support**: Manage multiple chatbot flows simultaneously.
+- **DataTable Interface**: Display user responses with search, filter, and modal preview options.
 
-    Installation
-    Features
-    Usage
-    Models
-    API Endpoints
-    Excel Template
-    Contributing
-    License
+## Table of Contents
 
-Installation
+1. [Installation](#installation)
+2. [Features](#features)
+3. [Usage](#usage)
+4. [Models](#models)
+5. [API Endpoints](#api-endpoints)
+6. [Excel Template](#excel-upload)
+7. [Contributing](#contributing)
+8. [License](#license)
 
-    Clone the repository:
+## Installation
 
-    bash
+Clone the repository:
 
-git clone https://github.com/yourusername/django-chatbot.git
-cd django-chatbot
-
+```bash
+git clone https://github.com/m-toufeeq/django-chatbot.git
+cd django-chatbotM
+```
 Install dependencies:
 
-bash
+```bash
 
 pip install -r requirements.txt
 
 Setup environment variables (optional for sensitive information):
-
-bash
+```bash
 
 cp .env.example .env
 
 Run migrations:
 
-bash
+```bash
 
 python manage.py migrate
 
 Create a superuser to access the Django Admin:
 
-bash
+```bash
 
 python manage.py createsuperuser
 
 Start the development server:
+```bash
 
-bash
-
-    python manage.py runserver
+python manage.py runserver
 
 Features
 Flow Creation and Management
