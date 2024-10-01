@@ -35,29 +35,29 @@ Install dependencies:
 ```bash
 
 pip install -r requirements.txt
-
+```
 Setup environment variables (optional for sensitive information):
 ```bash
 
 cp .env.example .env
-
+```
 Run migrations:
 
 ```bash
 
 python manage.py migrate
-
+```
 Create a superuser to access the Django Admin:
 
 ```bash
 
 python manage.py createsuperuser
-
+```
 Start the development server:
 ```bash
 
 python manage.py runserver
-
+```
 Features
 Flow Creation and Management
 
