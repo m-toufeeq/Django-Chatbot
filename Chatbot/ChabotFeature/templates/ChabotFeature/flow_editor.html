@@ -1,0 +1,246 @@
+{% comment %} {%extends "base.html"%} {% endcomment %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsplumb@2.15.6/dist/js/jsplumb.min.js"></script><style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #2c2c2c;
+            color: white;
+        }
+        #canvas {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #444;
+            position: relative;
+            background-color: #2c2c2c;
+        }
+        .node {
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            position: absolute;
+            background-color: #3c3c3c;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .node input {
+            width: calc(100% - 30px);
+            margin-bottom: 5px;
+            padding: 5px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            background-color: #2c2c2c;
+            color: white;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .option input {
+            flex-grow: 1;
+            margin-right: 5px;
+        }
+        .option-endpoint {
+            width: 10px;
+            height: 10px;
+            background-color: #007bff;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .delete-option, .add-option {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 2px 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .delete-option {
+            background-color: #dc3545;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+        #controls button, #controls input {
+            margin-right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #controls input {
+            background-color: #2c2c2c;
+            border: 1px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button id="addNode">Add Node</button>
+        <button id="deleteNode">Delete Node</button>
+        <button id="saveFlow">Save Flow</button>
+        <input type="text" id="flowName" placeholder="Enter flow name">
+    </div>
+    <div id="canvas"></div>
+
+    <script>
+        let jsPlumbInstance;
+        let nodeCounter = 0;
+        let selectedNode = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            jsPlumbInstance = jsPlumb.getInstance({
+                Connector: ["Bezier", { curviness: 50 }],
+                Endpoint: ["Dot", { radius: 5 }],
+                PaintStyle: { stroke: "#007bff", strokeWidth: 2 },
+                ConnectionOverlays: [
+                    ["Arrow", { location: 1, width: 10, length: 10 }]
+                ]
+            });
+
+            jsPlumbInstance.setContainer("canvas");
+
+            document.getElementById('addNode').addEventListener('click', addNode);
+            document.getElementById('deleteNode').addEventListener('click', deleteSelectedNode);
+            document.getElementById('saveFlow').addEventListener('click', saveFlow);
+
+            jsPlumbInstance.bind("connection", function(info) {
+                console.log("Connection made:", info);
+            });
+        });
+
+        function addNode() {
+            nodeCounter++;
+            const node = document.createElement('div');
+            node.id = nodeCounter;
+            node.className = 'node';
+            node.style.left = `${50 + nodeCounter * 20}px`;
+            node.style.top = `${50 + nodeCounter * 20}px`;
+            node.innerHTML = `
+                <input type="text" class="question" placeholder="Enter question">
+                <div class="options">
+                    ${createOptionHTML()}
+                </div>
+                <button class="add-option">Add Option</button>
+            `;
+
+            document.getElementById('canvas').appendChild(node);
+
+            jsPlumbInstance.draggable(node);
+            jsPlumbInstance.addEndpoint(node, {
+                anchor: "Left",
+                isSource: false,
+                isTarget: true,
+                maxConnections: -1
+            });
+
+            node.querySelector('.add-option').addEventListener('click', () => addOption(node));
+            node.addEventListener('click', () => selectNode(node));
+
+            attachDeleteOptionListeners(node);
+            addEndpointToOption(node.querySelector('.option-endpoint'));
+        }
+
+        function createOptionHTML() {
+            return `
+                <div class="option">
+                    <div class="option-endpoint"></div>
+                    <input type="text" placeholder="Option">
+                    <button class="delete-option">X</button>
+                </div>
+            `;
+        }
+
+        function addOption(node) {
+            const optionsContainer = node.querySelector('.options');
+            const newOptionHTML = createOptionHTML();
+            optionsContainer.insertAdjacentHTML('beforeend', newOptionHTML);
+            const newOption = optionsContainer.lastElementChild;
+            attachDeleteOptionListeners(newOption);
+            addEndpointToOption(newOption.querySelector('.option-endpoint'));
+        }
+
+        function addEndpointToOption(endpoint) {
+            jsPlumbInstance.addEndpoint(endpoint, {
+                anchor: "Right",
+                isSource: true,
+                isTarget: false,
+                maxConnections: 1
+            });
+        }
+
+        function attachDeleteOptionListeners(node) {
+            node.querySelectorAll('.delete-option').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const option = this.closest('.option');
+                    jsPlumbInstance.remove(option.querySelector('.option-endpoint'));
+                    option.remove();
+                });
+            });
+        }
+
+        function selectNode(node) {
+            if (selectedNode) {
+                selectedNode.style.border = '1px solid #007bff';
+            }
+            selectedNode = node;
+            selectedNode.style.border = '2px solid #28a745';
+        }
+
+        function deleteSelectedNode() {
+            if (selectedNode) {
+                jsPlumbInstance.remove(selectedNode);
+                selectedNode = null;
+            }
+        }
+
+        function saveFlow() {
+            const flowName = document.getElementById('flowName').value;
+            if (!flowName) {
+                alert('Please enter a flow name');
+                return;
+            }
+
+            const nodes = Array.from(document.querySelectorAll('.node')).map(node => {
+                return {
+                    id: node.id,
+                    question: node.querySelector('.question').value,
+                    options: Array.from(node.querySelectorAll('.option')).map(option => {
+                        const endpoint = option.querySelector('.option-endpoint');
+                        const connections = jsPlumbInstance.getConnections({source: endpoint});
+                        const nextStep = connections[0]?.targetId.split('-')[0] || null;
+                        return {
+                            text: option.querySelector('input').value,
+                            nextStep: nextStep
+                        };
+                    })
+                };
+            });
+
+            fetch('/flow-editor/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({flowName, nodes})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Flow saved successfully');
+                } else {
+                    alert('Error saving flow');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
